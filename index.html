@@ -966,6 +966,25 @@ function handleDrop(e){
   if(file) importExcel(file);
 }
 
+// Đọc giá trị số từ ô Excel — hỗ trợ cả công thức như =0.122*620*26400
+function parseExcelNum(val){
+  if(val===''||val===undefined||val===null) return 0;
+  if(typeof val==='number') return isFinite(val)?val:0;
+  var s=String(val).trim();
+  if(!s||s==='-') return 0;
+  if(s.charAt(0)==='='){
+    try{
+      var expr=s.slice(1);
+      if(/^[\d+\-*/.() ]+$/.test(expr)){
+        var r=Function('return '+expr)();
+        return (typeof r==='number'&&isFinite(r))?r:0;
+      }
+    }catch(e){}
+    return 0;
+  }
+  return parseFloat(s)||0;
+}
+
 function importExcel(file){
   if(!file) return;
   const ext = file.name.split('.').pop().toLowerCase();
@@ -1017,13 +1036,13 @@ function importExcel(file){
             if(!r[0]||String(r[0]).trim()==='') continue;
             var rawName=String(r[0]||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
             var obj={name:rawName};
-            if(r[1]&&+r[1]>0) obj.watt=+r[1];
-            if(r[2]&&+r[2]>0) obj.cost=+r[2]; else obj.cost=0;
+            var _watt=parseExcelNum(r[1]); if(_watt>0) obj.watt=_watt;
+            obj.cost=parseExcelNum(r[2]);
             var colD=r[3];
             if(colD!==undefined&&colD!==null&&colD!==''){
-              var colDStr=String(colD).replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
-              if(!isNaN(+colD)&&+colD>0) obj.area=+colD;
-              else if(colDStr) obj.desc=colDStr;
+              var _area=parseExcelNum(colD);
+              if(_area>0) obj.area=_area;
+              else{var colDStr=String(colD).trim();if(colDStr) obj.desc=colDStr;}
             }
             if(r[4]&&String(r[4]).trim()) obj.brand=String(r[4]).trim();
             if(r[5]&&String(r[5]).trim()) obj.note=String(r[5]).trim();
@@ -1045,13 +1064,13 @@ function importExcel(file){
             if(!r[0]||String(r[0]).trim()==='') continue;
             var rawInvName=String(r[0]||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
             var obj={name:rawInvName};
-            if(r[1]&&+r[1]>0) obj.kw=+r[1];
-            if(r[2]&&+r[2]>0) obj.cost=+r[2]; else obj.cost=0;
+            var _kw=parseExcelNum(r[1]); if(_kw>0) obj.kw=_kw;
+            obj.cost=parseExcelNum(r[2]);
             var effVal=r[3];
             if(effVal!==undefined&&effVal!==null&&effVal!==''){
-              var effStr=String(effVal).replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
-              if(!isNaN(+effVal)&&+effVal>0) obj.eff=+effVal;
-              else if(effStr) obj.desc=effStr;
+              var _eff=parseExcelNum(effVal);
+              if(_eff>0) obj.eff=_eff;
+              else{var effStr=String(effVal).trim();if(effStr) obj.desc=effStr;}
             }
             if(r[4]&&String(r[4]).trim()) obj.type=String(r[4]).trim();
             if(r[5]&&String(r[5]).trim()) obj.note=String(r[5]).trim();
@@ -1073,13 +1092,13 @@ function importExcel(file){
             if(!r[0]||String(r[0]).trim()==='') continue;
             var rawBattName=String(r[0]||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
             var obj={name:rawBattName};
-            if(r[1]&&+r[1]>0) obj.kwh=+r[1];
-            if(r[2]&&+r[2]>0) obj.cost=+r[2]; else obj.cost=0;
+            var _kwh=parseExcelNum(r[1]); if(_kwh>0) obj.kwh=_kwh;
+            obj.cost=parseExcelNum(r[2]);
             var dodVal=r[3];
             if(dodVal!==undefined&&dodVal!==null&&dodVal!==''){
-              var dodStr=String(dodVal).replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
-              if(!isNaN(+dodVal)&&+dodVal>0) obj.dod=+dodVal;
-              else if(dodStr) obj.desc=dodStr;
+              var _dod=parseExcelNum(dodVal);
+              if(_dod>0) obj.dod=_dod;
+              else{var dodStr=String(dodVal).trim();if(dodStr) obj.desc=dodStr;}
             }
             if(r[4]&&String(r[4]).trim()) obj.type=String(r[4]).trim();
             if(r[5]&&String(r[5]).trim()) obj.note=String(r[5]).trim();
@@ -1102,7 +1121,7 @@ function importExcel(file){
             if(String(r[0]).trim().startsWith('Vi du')) continue;
             var obj={name:String(r[0]).trim(), unit:String(r[1]||'Goi').trim()};
             if(r[2]&&String(r[2]).trim()) obj.qty_formula=String(r[2]).trim();
-            if(r[3]!==undefined&&r[3]!=='') obj.cost=+r[3];  // cho phép giá=0
+            if(r[3]!==undefined&&r[3]!=='') obj.cost=parseExcelNum(r[3]);  // cho phép giá=0, hỗ trợ công thức
             if(r[4]&&String(r[4]).trim()){
               const _cf=String(r[4]).trim();
               // Chỉ nhận cost_formula nếu chứa kwp/panels/cable hoặc là số học thuần túy
