@@ -3251,31 +3251,4 @@ function showToast(msg, type){
   let t=document.getElementById('nvh-toast');
   if(!t){
     t=document.createElement('div');
-    t.id='nvh-toast';
-    t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.2);transition:opacity .3s;pointer-events:none';
-    document.body.appendChild(t);
-  }
-  t.textContent=msg;
-  t.style.background=type==='success'?'#0E7C6B':type==='error'?'#A32D2D':'#1A2744';
-  t.style.color='white';
-  t.style.opacity='1';
-  clearTimeout(t._timer);
-  t._timer=setTimeout(function(){t.style.opacity='0';},2500);
-}
-
-// ===== INIT =====
-loadDB();
-toggleBattery();
-</script>
-  <script>
-    // Đăng ký Service Worker (PWA offline support)
-    if('serviceWorker' in navigator){
-      window.addEventListener('load', ()=>{
-        navigator.serviceWorker.register('./sw.js')
-          .then(reg=>console.log('[PWA] Service Worker registered:', reg.scope))
-          .catch(err=>console.warn('[PWA] SW registration failed:', err));
-      });
-    }
-  </script>
-</body>
-</html>
+    t.id='nvh-toa
