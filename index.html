@@ -1102,14 +1102,14 @@ function importExcel(file){
             if(String(r[0]).trim().startsWith('Vi du')) continue;
             var obj={name:String(r[0]).trim(), unit:String(r[1]||'Goi').trim()};
             if(r[2]&&String(r[2]).trim()) obj.qty_formula=String(r[2]).trim();
-            if(r[3]&&+r[3]>0) obj.cost=+r[3];
+            if(r[3]!==undefined&&r[3]!=='') obj.cost=+r[3];  // cho phép giá=0
             if(r[4]&&String(r[4]).trim()){
               const _cf=String(r[4]).trim();
               // Chỉ nhận cost_formula nếu chứa kwp/panels/cable hoặc là số học thuần túy
               if(/kwp|panels|cable/i.test(_cf)) obj.cost_formula=_cf;
               // Nếu là ghi chú thường (có chữ tiếng Việt) → bỏ qua
             }
-            if(obj.name && (obj.cost||obj.cost_formula)) materials.push(obj);
+            if(obj.name) materials.push(obj);  // giữ cả mục giá 0
           }
         }
 

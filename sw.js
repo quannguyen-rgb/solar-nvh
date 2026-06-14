@@ -1,6 +1,6 @@
 // Service Worker — Solar NamVietHung PWA
 // Phiên bản cache: tăng số này mỗi khi deploy bản mới
-const CACHE_NAME = 'solar-nvh-v1';
+const CACHE_NAME = 'solar-nvh-v2';
 
 // Các file cần cache để dùng offline
 const ASSETS = [
