@@ -1103,7 +1103,12 @@ function importExcel(file){
             var obj={name:String(r[0]).trim(), unit:String(r[1]||'Goi').trim()};
             if(r[2]&&String(r[2]).trim()) obj.qty_formula=String(r[2]).trim();
             if(r[3]&&+r[3]>0) obj.cost=+r[3];
-            if(r[4]&&String(r[4]).trim()) obj.cost_formula=String(r[4]).trim();
+            if(r[4]&&String(r[4]).trim()){
+              const _cf=String(r[4]).trim();
+              // Chỉ nhận cost_formula nếu chứa kwp/panels/cable hoặc là số học thuần túy
+              if(/kwp|panels|cable/i.test(_cf)) obj.cost_formula=_cf;
+              // Nếu là ghi chú thường (có chữ tiếng Việt) → bỏ qua
+            }
             if(obj.name && (obj.cost||obj.cost_formula)) materials.push(obj);
           }
         }
@@ -2026,7 +2031,9 @@ function buildQuoteItems(panelIdx, inverterIdx, battIdx){
     const isACcable = m.name.toLowerCase().includes('cáp ac') || m.name.toLowerCase().includes('cap ac');
     const displayName = isACcable ? _acLabel + '\n' + _acNote : m.name;
     if(m.cost_formula){
-      const c=Math.round(eval(m.cost_formula.replace(/kwp/g,actualKwp).replace(/panels/g,numPanels)));
+      let c=0;
+      try{c=Math.round(eval(m.cost_formula.replace(/kwp/g,actualKwp).replace(/panels/g,numPanels)));}
+      catch(e){c=0;console.warn('cost_formula loi:',m.cost_formula,e.message);}
       items.push({stt:String(i+1),name:displayName,unit:m.unit,qty:1,costUnit:c,quoteUnit:Math.round(c*(1+profitPct/100)),id:'mat-'+i});
     } else {
       const qty=needsEven(m.name)?evalQtyEven(m.qty_formula):evalQty(m.qty_formula);
@@ -2184,7 +2191,7 @@ function updateItemQty(id,val){
       }
       if(mat.cost_formula && (mat.cost_formula.includes('kwp')||mat.cost_formula.includes('panels'))){
         try{
-          const newCost=Math.round(eval(mat.cost_formula.replace(/kwp/g,newKwp).replace(/panels/g,newN)));
+          let newCost=mat.cost||0;try{newCost=Math.round(eval(mat.cost_formula.replace(/kwp/g,newKwp).replace(/panels/g,newN)));}catch(e){}
           item.costUnit=newCost;
           const profitPct=+document.getElementById('profit-pct').value||15;
           item.quoteUnit=Math.round(newCost*(1+profitPct/100));
