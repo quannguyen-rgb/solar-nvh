@@ -1,0 +1,3245 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1A2744">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Solar NVH">
+  <link rel="apple-touch-icon" href="icon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1A2744">
+<title>Solar Calculator – Nam Việt Hưng</title>
+<link rel="manifest" href="manifest.json">
+<!-- Offline mode: no external libraries needed -->
+<style>
+:root{--orange:#E8620A;--orange-light:#FFF3EB;--orange-mid:#F9934A;--navy:#1A2744;--navy-light:#2C3E6B;--teal:#0E7C6B;--teal-light:#E5F5F2;--gray-bg:#F7F8FA;--gray-border:#E2E6ED;--gray-text:#6B7280;--text:#111827;--white:#ffffff;--radius:10px;--shadow:0 1px 4px rgba(0,0,0,0.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--gray-bg);color:var(--text);font-size:14px}
+.header{background:var(--navy);padding:13px 22px;display:flex;align-items:center;gap:13px;position:sticky;top:0;z-index:100}
+.header-logo{width:36px;height:36px;background:var(--orange);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.header-title{color:white;font-size:15px;font-weight:600}
+.header-sub{color:rgba(255,255,255,.5);font-size:11px;margin-top:1px}
+.tabs{background:var(--navy-light);display:flex;gap:2px;padding:6px 22px 0;overflow-x:auto}
+.tab{padding:9px 16px;color:rgba(255,255,255,.6);font-size:13px;font-weight:500;cursor:pointer;border-radius:7px 7px 0 0;border:none;background:transparent;transition:all .15s;white-space:nowrap}
+.tab:hover{color:white;background:rgba(255,255,255,.08)}
+.tab.active{background:var(--gray-bg);color:var(--navy);font-weight:600}
+.main{max-width:960px;margin:0 auto;padding:22px 14px}
+.page{display:none}.page.active{display:block}
+.card{background:white;border:1px solid var(--gray-border);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card-title{font-size:12px;font-weight:600;color:var(--orange);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid.cols-3{grid-template-columns:1fr 1fr 1fr}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group.full{grid-column:1/-1}
+label{font-size:11px;font-weight:500;color:var(--gray-text);text-transform:uppercase;letter-spacing:.4px}
+input,select,textarea{padding:8px 11px;border:1px solid var(--gray-border);border-radius:7px;font-size:14px;color:var(--text);background:white;transition:border-color .15s;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(232,98,10,.1)}
+textarea{resize:vertical;min-height:68px}
+.input-unit{position:relative}
+.input-unit input{padding-right:40px}
+.unit-label{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--gray-text);pointer-events:none}
+.radio-group{display:flex;flex-wrap:wrap;gap:7px}
+.radio-btn{padding:6px 13px;border:1px solid var(--gray-border);border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;color:var(--gray-text);transition:all .15s;user-select:none}
+.radio-btn:hover{border-color:var(--orange-mid);color:var(--orange)}
+.radio-btn.selected{background:var(--orange-light);border-color:var(--orange);color:var(--orange);font-weight:600}
+.btn{padding:9px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:var(--orange);color:white}.btn-primary:hover{background:#CF5608}
+.btn-secondary{background:white;color:var(--navy);border:1px solid var(--gray-border)}.btn-secondary:hover{background:var(--gray-bg)}
+.btn-teal{background:var(--teal);color:white}.btn-teal:hover{background:#0B6A5A}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap}
+/* IMPORT ZONE */
+.import-zone{border:2px dashed var(--gray-border);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;transition:all .2s;background:var(--gray-bg)}
+.import-zone:hover,.import-zone.drag{border-color:var(--orange);background:var(--orange-light)}
+.import-zone .iz-icon{font-size:32px;margin-bottom:8px}
+.import-zone p{color:var(--gray-text);font-size:13px}
+.import-zone strong{color:var(--orange)}
+.import-status{margin-top:10px;padding:10px 14px;border-radius:7px;font-size:13px;font-weight:500}
+.import-status.ok{background:var(--teal-light);color:var(--teal)}
+.import-status.err{background:#FCE8E8;color:#A32D2D}
+/* RESULT */
+.result-header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%);border-radius:var(--radius);padding:20px 22px;margin-bottom:14px;color:white}
+.result-header h2{font-size:17px;font-weight:700}
+.result-header p{color:rgba(255,255,255,.6);font-size:12px;margin-top:3px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.kpi-card{background:white;border:1px solid var(--gray-border);border-radius:var(--radius);padding:14px;text-align:center}
+.kpi-val{font-size:21px;font-weight:700;color:var(--orange)}
+.kpi-unit{font-size:11px;color:var(--gray-text);margin-top:1px}
+.kpi-label{font-size:11px;color:var(--gray-text);margin-top:5px}
+.profit-bar{background:var(--orange-light);border:1px solid #F5C9A0;border-radius:var(--radius);padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.profit-bar label{font-size:13px;font-weight:600;color:var(--navy);white-space:nowrap}
+.profit-bar input[type=number]{width:80px;text-align:center;font-weight:600}
+.quote-table{width:100%;border-collapse:collapse;font-size:13px}
+.quote-table th{background:var(--navy);color:white;padding:8px 11px;text-align:left;font-weight:500;font-size:12px}
+.quote-table th:last-child,.quote-table td:last-child{text-align:right}
+.quote-table td{padding:7px 11px;border-bottom:1px solid var(--gray-border)}
+.quote-table tr:hover td{background:var(--gray-bg)}
+.quote-table .group-row td{background:var(--orange-light);font-weight:600;color:var(--orange);font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+.quote-table .total-row td{background:var(--navy);color:white;font-weight:700}
+.quote-table .subtotal-row td{background:var(--gray-bg);font-weight:600}
+.editable-cell{background:white;border:1px solid var(--gray-border);border-radius:5px;padding:3px 7px;text-align:right;font-size:13px}
+.editable-cell:focus{outline:none;border-color:var(--orange)}
+.fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat-mini{background:var(--gray-bg);border-radius:8px;padding:10px 14px;min-width:120px}
+.stat-lbl{display:block;font-size:11px;color:var(--gray-text);margin-bottom:4px}
+.stat-val{display:block;font-size:15px;font-weight:700;color:var(--navy)}
+.fin-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--gray-border);font-size:13px}
+.fin-row:last-child{border-bottom:none}
+.fin-row .fin-val{font-weight:600;color:var(--navy)}
+.fin-row.highlight .fin-val{color:var(--orange);font-size:15px}
+.fin-row.green .fin-val{color:var(--teal)}
+/* DB */
+.db-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:7px;align-items:center;padding:7px 10px;background:var(--gray-bg);border-radius:6px;margin-bottom:5px}
+.db-row.header{background:var(--navy);color:white;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.db-row.header span{color:rgba(255,255,255,.7)}
+.db-row input{font-size:13px}
+.del-btn{background:none;border:none;color:#E24B4A;cursor:pointer;font-size:18px;line-height:1;padding:0 3px}
+.add-btn{background:none;border:1px dashed var(--gray-border);color:var(--teal);font-size:13px;padding:6px 12px;border-radius:6px;cursor:pointer;width:100%;margin-top:3px;font-weight:500}
+.add-btn:hover{background:var(--teal-light);border-color:var(--teal)}
+.notice{background:#EEF0F7;border:1px solid #C5CBE0;border-radius:8px;padding:11px 14px;font-size:13px;color:var(--navy-light);margin-bottom:12px}
+.notice strong{color:var(--navy)}
+/* TIER CHART */
+.tier-bars{display:flex;align-items:flex-end;gap:3px;height:110px;padding:0 2px}
+.tier-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tier-bar{width:100%;border-radius:3px 3px 0 0;transition:all .3s;position:relative;min-height:4px}
+.tier-bar.active{opacity:1}
+.tier-bar.inactive{opacity:.25}
+.tier-bar.pv-saved{background:repeating-linear-gradient(45deg,rgba(255,255,255,.3),rgba(255,255,255,.3) 3px,transparent 3px,transparent 6px)}
+.tier-lbl{font-size:9px;color:var(--gray-text);text-align:center}
+.tier-amt{font-size:9px;font-weight:600;text-align:center}
+/* DAYNIGHT BAR */
+.dn-bar-wrap{height:28px;border-radius:6px;overflow:hidden;display:flex;margin-bottom:6px}
+.dn-day{background:#F59E0B;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;transition:width .3s}
+.dn-night{background:#1A2744;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:rgba(255,255,255,.8);transition:width .3s}
+/* RECOMMEND */
+.rec-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.rec-card{border-radius:9px;padding:13px 15px;border:1.5px solid}
+.rec-card.ongrid{border-color:#0E7C6B;background:var(--teal-light)}
+.rec-card.hybrid{border-color:var(--orange);background:var(--orange-light)}
+.rec-card .rc-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.rec-card.ongrid .rc-badge{color:var(--teal)}
+.rec-card.hybrid .rc-badge{color:var(--orange)}
+.rec-card .rc-kwp{font-size:22px;font-weight:700;line-height:1}
+.rec-card.ongrid .rc-kwp{color:var(--teal)}
+.rec-card.hybrid .rc-kwp{color:var(--orange)}
+.rec-card .rc-detail{font-size:11px;color:var(--gray-text);margin-top:5px;line-height:1.6}
+.rec-card .rc-save{font-size:12px;font-weight:600;margin-top:6px}
+.rec-card.ongrid .rc-save{color:var(--teal)}
+.rec-card.hybrid .rc-save{color:var(--orange)}
+.rec-apply{width:100%;margin-top:8px;padding:8px;background:var(--navy);color:white;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.rec-apply:hover{background:var(--navy-light)}
+@media(max-width:600px){
+  .form-grid,.form-grid.cols-3{grid-template-columns:1fr}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .fin-grid{grid-template-columns:1fr}
+  .db-row{grid-template-columns:1fr 1fr auto}
+  .tabs{padding:6px 8px 0}
+  .tab{padding:7px 9px;font-size:12px}
+  input,select,textarea{font-size:16px!important} /* prevent iOS auto-zoom */
+  .btn{padding:12px 18px;font-size:15px} /* bigger tap target */
+  .btn-sm{padding:9px 12px;font-size:13px}
+  .radio-btn{padding:9px 13px;font-size:13px}
+  .quote-table{font-size:12px}
+  .quote-table th,.quote-table td{padding:6px 7px}
+  .kpi-val{font-size:18px}
+  .result-header h2{font-size:15px}
+  .qd-meta{grid-template-columns:1fr}
+  .qd-customer-grid{grid-template-columns:1fr}
+  .qd-savings{grid-template-columns:1fr 1fr}
+  .qd-sign{grid-template-columns:1fr}
+  .rec-grid{grid-template-columns:1fr}
+  .profit-bar{flex-direction:column;align-items:flex-start;gap:8px}
+}
+/* Floating calculate button on mobile */
+.fab-calc{display:none}
+@media(max-width:600px){
+  .fab-calc{display:flex;position:fixed;bottom:20px;right:16px;z-index:200;background:var(--orange);color:white;border:none;border-radius:50px;padding:13px 22px;font-size:14px;font-weight:700;box-shadow:0 4px 16px rgba(232,98,10,.45);align-items:center;gap:8px;cursor:pointer;touch-action:manipulation}
+  .fab-calc:active{transform:scale(.96)}
+}
+button{touch-action:manipulation}
+/* QUOTE DOCUMENT */
+.quote-doc{background:white;border:1px solid var(--gray-border);border-radius:var(--radius);padding:0;margin-bottom:14px;box-shadow:var(--shadow);overflow:hidden}
+.qd-header{padding:18px 24px 14px;border-bottom:3px solid var(--orange)}
+.qd-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:12px}
+.qd-republic{text-align:center;font-size:12px;line-height:1.7;color:var(--navy)}
+.qd-republic .republic-title{font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.5px}
+.qd-republic .republic-motto{font-size:11px;color:var(--gray-text)}
+.qd-republic .republic-underline{border-bottom:1px solid var(--navy);width:60%;margin:2px auto 0}
+.qd-company{text-align:left;font-size:11px;color:var(--gray-text);line-height:1.7}
+.qd-company strong{color:var(--navy);font-size:13px;display:block;margin-bottom:2px}
+.qd-title-block{text-align:center;padding:10px 0 6px}
+.qd-title-block h1{font-size:17px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:1px}
+.qd-title-block .qd-subtitle{font-size:12px;color:var(--gray-text);margin-top:3px}
+.qd-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;padding:10px 24px;background:var(--gray-bg);border-top:1px solid var(--gray-border);border-bottom:1px solid var(--gray-border);font-size:12px}
+.qd-meta-row{display:flex;gap:6px}
+.qd-meta-row .mk{color:var(--gray-text);white-space:nowrap;min-width:110px}
+.qd-meta-row .mv{font-weight:600;color:var(--navy)}
+.qd-customer{padding:12px 24px;border-bottom:1px solid var(--gray-border)}
+.qd-customer-title{font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.qd-customer-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 24px;font-size:12px}
+.qd-body{padding:14px 24px}
+.qd-section-title{font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--gray-border)}
+.qd-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px}
+.qd-table th{background:var(--navy);color:white;padding:7px 10px;text-align:left;font-weight:500;font-size:11px}
+.qd-table th:last-child,.qd-table td:last-child{text-align:right}
+.qd-table td{padding:6px 10px;border-bottom:1px solid var(--gray-border)}
+.qd-table .qd-group td{background:var(--orange-light);color:var(--orange);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.qd-table .qd-subtotal td{background:var(--gray-bg);font-weight:600}
+.qd-table .qd-total td{background:var(--navy);color:white;font-weight:700}
+.qd-specs{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:12px;background:var(--teal-light);border-radius:8px;padding:10px 14px;margin-bottom:8px}
+.qd-specs .sk{color:var(--teal);font-weight:500}
+.qd-specs .sv{font-weight:600;color:var(--navy);text-align:right}
+.qd-savings{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+.qd-save-card{background:var(--orange-light);border:1px solid #F5C9A0;border-radius:8px;padding:10px;text-align:center}
+.qd-save-card .sc-val{font-size:16px;font-weight:700;color:var(--orange)}
+.qd-save-card .sc-lbl{font-size:10px;color:var(--gray-text);margin-top:2px}
+.qd-terms{font-size:11px;color:var(--gray-text);line-height:1.8;background:var(--gray-bg);border-radius:8px;padding:10px 14px;margin-bottom:8px}
+.qd-terms strong{color:var(--navy);display:block;margin-bottom:3px}
+.qd-sign{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:16px 24px;border-top:1px solid var(--gray-border);margin-top:8px}
+.qd-device-imgs{padding:14px 24px 6px;border-top:1px solid var(--gray-border)}
+.qd-device-imgs-title{font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.qd-img-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
+.qd-img-card{text-align:center;border:1px solid var(--gray-border);border-radius:8px;padding:10px 8px;background:var(--gray-bg)}
+.qd-img-card img{max-width:100%;max-height:130px;object-fit:contain;border-radius:4px;margin-bottom:6px}
+.qd-img-card .img-dev-name{font-size:10px;font-weight:700;color:var(--navy);line-height:1.4}
+.qd-img-card .img-dev-spec{font-size:9px;color:var(--gray-text);margin-top:2px}
+/* DB tab image upload */
+.dev-img-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-border)}
+.dev-img-row:last-child{border-bottom:none}
+.dev-img-thumb{width:56px;height:44px;object-fit:contain;border:1px solid var(--gray-border);border-radius:6px;background:#fff}
+.dev-img-thumb.empty{display:flex;align-items:center;justify-content:center;font-size:20px;color:#ccc}
+.dev-img-name{flex:1;font-size:12px;color:var(--navy);font-weight:600;line-height:1.4}
+.dev-img-btn{font-size:11px;padding:5px 10px;border-radius:6px;border:1px solid var(--orange);background:white;color:var(--orange);cursor:pointer;white-space:nowrap}
+.dev-img-btn:hover{background:var(--orange);color:white}
+.dev-img-del{font-size:11px;padding:5px 8px;border-radius:6px;border:1px solid #ccc;background:white;color:#999;cursor:pointer}
+.qd-sign-block{text-align:center;font-size:12px}
+.qd-sign-block .sign-title{font-weight:600;color:var(--navy);margin-bottom:48px}
+.qd-sign-block .sign-name{font-weight:700;color:var(--navy)}
+.qd-sign-block .sign-sub{color:var(--gray-text);font-size:11px}
+/* CALC TRACE */
+.trace-section{margin-bottom:14px}
+.trace-title{font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px;padding-left:8px;border-left:3px solid var(--orange)}
+.trace-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--gray-border);font-size:13px}
+.trace-row:last-child{border-bottom:none}
+.trace-row .tk{color:var(--gray-text)}
+.trace-row .tv{font-weight:600;color:var(--navy)}
+.trace-row .tv.hi{color:var(--orange)}
+.trace-formula{background:#F0F4FF;border:1px solid #C5CBE0;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--navy-light);margin:6px 0 10px;line-height:1.9;font-family:monospace}
+.trace-formula strong{color:var(--orange)}
+details>summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--navy);padding:4px 0;user-select:none}
+details>summary:hover{color:var(--orange)}
+/* SO SÁNH */
+.cmp-table{width:100%;border-collapse:collapse;font-size:13px}
+.cmp-table th{background:var(--navy);color:white;padding:10px 12px;text-align:center;font-weight:500;font-size:12px;white-space:nowrap}
+.cmp-table td{padding:9px 12px;border-bottom:1px solid var(--gray-border);text-align:center}
+.cmp-table td:first-child{text-align:left;color:var(--gray-text);font-size:12px;font-weight:500;background:var(--gray-bg)}
+.cmp-table tr:hover td{background:var(--orange-light)}
+.cmp-table .cmp-best{color:var(--teal);font-weight:700}
+.cmp-table .cmp-group td{background:var(--navy-light);color:rgba(255,255,255,.8);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.cmp-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.cmp-badge.ongrid{background:var(--teal-light);color:var(--teal)}
+.cmp-badge.hybrid{background:var(--orange-light);color:var(--orange)}
+@media(max-width:600px){
+  .cmp-table{font-size:11px}
+  .cmp-table th,.cmp-table td{padding:7px 8px}
+}
+@media print{
+  .header,.tabs,.btn-row,.profit-bar,.no-print,.device-selector-card,#device-selector-card{display:none!important}
+  .card{box-shadow:none;border:1px solid #ddd}
+  .quote-doc{box-shadow:none;border:none}
+  body{background:white}
+  .qd-header{break-inside:avoid}
+  .qd-table{break-inside:auto}
+  @page{margin:12mm 14mm}
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
+  onerror="document.getElementById('xlsx-warn').style.display='block'"></script>
+<div id="xlsx-warn" style="display:none;position:fixed;bottom:16px;right:16px;background:#A32D2D;color:white;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;max-width:320px;box-shadow:0 4px 16px rgba(0,0,0,.3)">
+  ⚠️ <strong>Chưa tải được thư viện Excel</strong><br>
+  <span style="font-weight:400;font-size:12px">Chức năng nhập file Excel cần internet lần đầu.<br>
+  Hoặc dùng file <em>_OFFLINE.html</em> (chạy make_offline.py).</span>
+</div>
+</head>
+<body>
+<div class="header">
+  <div class="header-logo">☀️</div>
+  <div>
+    <div class="header-title">SOLAR CALCULATOR – NAM VIỆT HƯNG</div>
+    <div class="header-sub">Khảo sát & báo giá điện mặt trời áp mái</div>
+  </div>
+</div>
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('survey')">📋 Khảo Sát</button>
+  <button class="tab" onclick="switchTab('result')">📊 Báo Giá</button>
+  <button class="tab" onclick="switchTab('detail')">🔍 Chi Tiết</button>
+  <button class="tab" onclick="switchTab('compare')">🔀 So Sánh</button>
+  <button class="tab" onclick="switchTab('db')">🗂️ Cơ Sở Dữ Liệu</button>
+</div>
+
+<!-- ===== TAB 1: KHẢO SÁT ===== -->
+<div id="page-survey" class="page active"><div class="main">
+  <div class="card">
+    <div class="card-title">👤 Thông Tin Khách Hàng</div>
+    <div class="form-grid cols-3">
+      <div class="form-group"><label>Tên khách hàng</label><input id="s-name" placeholder="Nguyễn Văn A"></div>
+      <div class="form-group"><label>Số điện thoại</label><input id="s-phone" placeholder="0909 xxx xxx"></div>
+      <div class="form-group"><label>Nhân viên khảo sát</label><input id="s-staff" placeholder="Tên NV – SĐT" list="staff-list"><datalist id="staff-list"></datalist></div>
+      <div class="form-group"><label>Tỉnh / Thành phố</label>
+        <select id="s-city">
+          <optgroup label="── Miền Nam ──">
+            <option value="4.5:TP. Hồ Chí Minh">TP. Hồ Chí Minh (4.5 h/ngày)</option>
+            <option value="4.5:Bình Dương">Bình Dương (4.5 h/ngày)</option>
+            <option value="4.5:Đồng Nai">Đồng Nai (4.5 h/ngày)</option>
+            <option value="4.5:Long An">Long An (4.5 h/ngày)</option>
+            <option value="4.5:Bà Rịa – Vũng Tàu">Bà Rịa – Vũng Tàu (4.5 h/ngày)</option>
+            <option value="4.5:Tây Ninh">Tây Ninh (4.5 h/ngày)</option>
+            <option value="4.5:Bình Phước">Bình Phước (4.5 h/ngày)</option>
+            <option value="4.5:Cần Thơ">Cần Thơ (4.5 h/ngày)</option>
+            <option value="4.5:An Giang">An Giang (4.5 h/ngày)</option>
+            <option value="4.5:Kiên Giang">Kiên Giang (4.5 h/ngày)</option>
+            <option value="4.5:Tiền Giang">Tiền Giang (4.5 h/ngày)</option>
+            <option value="4.5:Đồng Tháp">Đồng Tháp (4.5 h/ngày)</option>
+            <option value="4.5:Vĩnh Long">Vĩnh Long (4.5 h/ngày)</option>
+            <option value="4.5:Trà Vinh">Trà Vinh (4.5 h/ngày)</option>
+            <option value="4.5:Bến Tre">Bến Tre (4.5 h/ngày)</option>
+            <option value="4.5:Sóc Trăng">Sóc Trăng (4.5 h/ngày)</option>
+            <option value="4.5:Bạc Liêu">Bạc Liêu (4.5 h/ngày)</option>
+            <option value="4.5:Cà Mau">Cà Mau (4.5 h/ngày)</option>
+            <option value="4.5:Hậu Giang">Hậu Giang (4.5 h/ngày)</option>
+          </optgroup>
+          <optgroup label="── Miền Trung & Tây Nguyên ──">
+            <option value="3.8:Đà Nẵng">Đà Nẵng (3.8 h/ngày)</option>
+            <option value="3.8:Thừa Thiên Huế">Thừa Thiên Huế (3.8 h/ngày)</option>
+            <option value="3.8:Quảng Nam">Quảng Nam (3.8 h/ngày)</option>
+            <option value="3.8:Quảng Ngãi">Quảng Ngãi (3.8 h/ngày)</option>
+            <option value="3.8:Bình Định">Bình Định (3.8 h/ngày)</option>
+            <option value="3.8:Phú Yên">Phú Yên (3.8 h/ngày)</option>
+            <option value="3.8:Khánh Hòa">Khánh Hòa (3.8 h/ngày)</option>
+            <option value="3.8:Ninh Thuận">Ninh Thuận (3.8 h/ngày)</option>
+            <option value="3.8:Bình Thuận">Bình Thuận (3.8 h/ngày)</option>
+            <option value="3.8:Quảng Bình">Quảng Bình (3.8 h/ngày)</option>
+            <option value="3.8:Quảng Trị">Quảng Trị (3.8 h/ngày)</option>
+            <option value="3.8:Gia Lai">Gia Lai (3.8 h/ngày)</option>
+            <option value="3.8:Kon Tum">Kon Tum (3.8 h/ngày)</option>
+            <option value="3.8:Đắk Lắk">Đắk Lắk (3.8 h/ngày)</option>
+            <option value="3.8:Đắk Nông">Đắk Nông (3.8 h/ngày)</option>
+            <option value="3.8:Lâm Đồng">Lâm Đồng (3.8 h/ngày)</option>
+          </optgroup>
+          <optgroup label="── Miền Bắc ──">
+            <option value="3.5:Hà Nội">Hà Nội (3.5 h/ngày)</option>
+            <option value="3.5:Hải Phòng">Hải Phòng (3.5 h/ngày)</option>
+            <option value="3.5:Quảng Ninh">Quảng Ninh (3.5 h/ngày)</option>
+            <option value="3.5:Bắc Ninh">Bắc Ninh (3.5 h/ngày)</option>
+            <option value="3.5:Hưng Yên">Hưng Yên (3.5 h/ngày)</option>
+            <option value="3.5:Hải Dương">Hải Dương (3.5 h/ngày)</option>
+            <option value="3.5:Nam Định">Nam Định (3.5 h/ngày)</option>
+            <option value="3.5:Thái Bình">Thái Bình (3.5 h/ngày)</option>
+            <option value="3.5:Ninh Bình">Ninh Bình (3.5 h/ngày)</option>
+            <option value="3.5:Thanh Hóa">Thanh Hóa (3.5 h/ngày)</option>
+            <option value="3.5:Nghệ An">Nghệ An (3.5 h/ngày)</option>
+            <option value="3.5:Hà Tĩnh">Hà Tĩnh (3.5 h/ngày)</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="form-group full"><label>Địa chỉ lắp đặt</label><input id="s-address" placeholder="123 Đường ABC, Quận 1"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">⚡ Tiêu Thụ Điện & Phân Tích Bậc Thang</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Nhập theo</label>
+        <div class="radio-group" id="elec-input-type">
+          <div class="radio-btn selected" data-val="kwh" onclick="selectRadio(this,'elec-input-type');toggleElecInput();liveAnalyze()">Sản lượng (kWh)</div>
+          <div class="radio-btn" data-val="money" onclick="selectRadio(this,'elec-input-type');toggleElecInput();liveAnalyze()">Tiền điện (VNĐ)</div>
+        </div>
+      </div>
+      <div class="form-group"><label id="elec-label">Điện tiêu thụ / tháng</label>
+        <div class="input-unit"><input type="number" id="s-kwh" placeholder="900" oninput="liveAnalyze()"><span class="unit-label" id="elec-unit">kWh</span></div>
+      </div>
+      <div class="form-group"><label>Loại hình sử dụng điện</label>
+        <div class="radio-group" id="elec-type">
+          <div class="radio-btn selected" data-val="residential_stepped" onclick="selectRadio(this,'elec-type');liveAnalyze()">Sinh hoạt bậc thang</div>
+          <div class="radio-btn" data-val="business" onclick="selectRadio(this,'elec-type');liveAnalyze()">Kinh doanh</div>
+          <div class="radio-btn" data-val="production" onclick="selectRadio(this,'elec-type');liveAnalyze()">Sản xuất</div>
+        </div>
+      </div>
+      <div class="form-group"><label>Số pha</label>
+        <div class="radio-group" id="phase-type">
+          <div class="radio-btn selected" data-val="1" onclick="selectRadio(this,'phase-type')">1 pha</div>
+          <div class="radio-btn" data-val="3" onclick="selectRadio(this,'phase-type')">3 pha</div>
+        </div>
+      </div>
+
+      <!-- Phân bổ ngày/đêm -->
+      <div class="form-group">
+        <label>Điện dùng ban ngày (%)</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="range" id="s-day-pct" min="20" max="80" value="40" step="5" oninput="document.getElementById('day-pct-val').textContent=this.value+'%';document.getElementById('s-night-pct-val').textContent=(100-this.value)+'%';liveAnalyze()" style="flex:1">
+          <span id="day-pct-val" style="font-weight:600;color:var(--orange);min-width:36px">40%</span>
+        </div>
+        <div style="font-size:11px;color:var(--gray-text);margin-top:3px">Ban đêm: <span id="s-night-pct-val" style="font-weight:600">60%</span> · Kéo để điều chỉnh</div>
+      </div>
+
+      <!-- Mục tiêu giảm -->
+      <div class="form-group">
+        <label>Mục tiêu tư vấn công suất</label>
+        <div class="radio-group" id="target-mode">
+          <div class="radio-btn selected" data-val="cut56" onclick="selectRadio(this,'target-mode');toggleTargetInput();liveAnalyze()">Cắt bậc 5 & 6</div>
+          <div class="radio-btn" data-val="cut6" onclick="selectRadio(this,'target-mode');toggleTargetInput();liveAnalyze()">Chỉ cắt bậc 6</div>
+          <div class="radio-btn" data-val="pct" onclick="selectRadio(this,'target-mode');toggleTargetInput();liveAnalyze()">Giảm % tiền điện</div>
+          <div class="radio-btn" data-val="full" onclick="selectRadio(this,'target-mode');toggleTargetInput();liveAnalyze()">Tự cấp 100%</div>
+          <div class="radio-btn" data-val="bill" onclick="selectRadio(this,'target-mode');toggleTargetInput();liveAnalyze()">🎯 Tiền điện mục tiêu</div>
+        </div>
+        <div id="target-pct-input" style="display:none;margin-top:8px">
+          <div class="input-unit" style="width:140px">
+            <input type="number" id="s-target-pct" value="70" min="10" max="100" oninput="liveAnalyze()">
+            <span class="unit-label">%</span>
+          </div>
+        </div>
+        <div id="target-bill-input" style="display:none;margin-top:8px">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div class="input-unit" style="width:180px">
+              <input type="number" id="s-target-bill" placeholder="800000" min="0" oninput="liveAnalyze();updateBattCalc()">
+              <span class="unit-label">đ/tháng</span>
+            </div>
+            <span style="font-size:11px;color:var(--gray-text)">Tiền điện còn trả EVN sau lắp hệ thống</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE ANALYSIS PANEL -->
+    <div id="live-analysis" style="display:none;margin-top:16px;border-top:1px solid var(--gray-border);padding-top:14px">
+
+      <!-- Biểu đồ bậc thang -->
+      <div style="font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📊 Biểu Đồ Tiền Điện Theo Bậc Thang EVN</div>
+      <div id="tier-chart" style="margin-bottom:14px"></div>
+
+      <!-- Bảng chi tiết bậc -->
+      <div style="overflow-x:auto;margin-bottom:14px">
+        <table style="width:100%;border-collapse:collapse;font-size:12px" id="tier-table">
+          <thead>
+            <tr style="background:var(--navy);color:white">
+              <th style="padding:6px 10px;text-align:left;font-weight:500">Bậc</th>
+              <th style="padding:6px 10px;text-align:center">Mức (kWh)</th>
+              <th style="padding:6px 10px;text-align:right">Giá (đ/kWh)</th>
+              <th style="padding:6px 10px;text-align:right">Tiêu thụ</th>
+              <th style="padding:6px 10px;text-align:right">Tiền bậc này</th>
+              <th style="padding:6px 10px;text-align:center">Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody id="tier-tbody"></tbody>
+          <tfoot id="tier-tfoot"></tfoot>
+        </table>
+      </div>
+
+      <!-- Phân bổ ngày/đêm -->
+      <div style="font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🌞 Phân Bổ Tiêu Thụ Ngày / Đêm</div>
+      <div id="daynight-bar" style="margin-bottom:14px"></div>
+
+      <!-- Khuyến nghị công suất -->
+      <div style="font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">⚡ Khuyến Nghị Công Suất Hệ Thống</div>
+      <div id="recommend-panel"></div>
+
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🏠 Thông Số Mái Nhà</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Loại mái</label>
+        <div class="radio-group" id="roof-type">
+          <div class="radio-btn selected" data-val="concrete" onclick="selectRadio(this,'roof-type')">Bê tông / Sân thượng</div>
+          <div class="radio-btn" data-val="tile" onclick="selectRadio(this,'roof-type')">Ngói</div>
+          <div class="radio-btn" data-val="metal" onclick="selectRadio(this,'roof-type')">Tôn / Kim loại</div>
+          <div class="radio-btn" data-val="other" onclick="selectRadio(this,'roof-type')">Khác</div>
+        </div>
+      </div>
+      <div class="form-group"><label>Hướng mái chính</label>
+        <div class="radio-group" id="roof-dir">
+          <div class="radio-btn selected" data-val="south" onclick="selectRadio(this,'roof-dir')">Nam</div>
+          <div class="radio-btn" data-val="southeast" onclick="selectRadio(this,'roof-dir')">Đông Nam</div>
+          <div class="radio-btn" data-val="southwest" onclick="selectRadio(this,'roof-dir')">Tây Nam</div>
+          <div class="radio-btn" data-val="east" onclick="selectRadio(this,'roof-dir')">Đông</div>
+          <div class="radio-btn" data-val="west" onclick="selectRadio(this,'roof-dir')">Tây</div>
+        </div>
+      </div>
+      <div class="form-group"><label>Diện tích mái có thể lắp (m²)</label>
+        <div class="input-unit"><input type="number" id="s-roof-area" placeholder="120"><span class="unit-label">m²</span></div>
+      </div>
+      <div class="form-group"><label>Góc nghiêng mái (°)</label>
+        <div class="input-unit"><input type="number" id="s-tilt" placeholder="12" max="45"><span class="unit-label">°</span></div>
+      </div>
+      <div class="form-group"><label>Tình trạng bóng đổ</label>
+        <div class="radio-group" id="shadow">
+          <div class="radio-btn selected" data-val="none" onclick="selectRadio(this,'shadow')">Không có</div>
+          <div class="radio-btn" data-val="partial" onclick="selectRadio(this,'shadow')">Một phần</div>
+          <div class="radio-btn" data-val="heavy" onclick="selectRadio(this,'shadow')">Nhiều</div>
+        </div>
+      </div>
+      <div class="form-group"><label>Tải trọng mái</label>
+        <div class="radio-group" id="roof-load">
+          <div class="radio-btn selected" data-val="ok" onclick="selectRadio(this,'roof-load')">Đảm bảo</div>
+          <div class="radio-btn" data-val="check" onclick="selectRadio(this,'roof-load')">Cần kiểm tra</div>
+          <div class="radio-btn" data-val="reinforce" onclick="selectRadio(this,'roof-load')">Cần gia cố</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🔌 Vị Trí Đấu Nối</div>
+    <div class="form-grid cols-3">
+      <div class="form-group"><label>PV → Inverter (m)</label>
+        <div class="input-unit"><input type="number" id="s-dist-pv" placeholder="15"><span class="unit-label">m</span></div>
+      </div>
+      <div class="form-group"><label>Inverter → Tủ điện (m)</label>
+        <div class="input-unit"><input type="number" id="s-dist-inv" placeholder="10"><span class="unit-label">m</span></div>
+      </div>
+      <div class="form-group"><label>Tủ điện → Đồng hồ EVN (m)</label>
+        <div class="input-unit"><input type="number" id="s-dist-evn" placeholder="5"><span class="unit-label">m</span></div>
+      </div>
+      <div class="form-group"><label>Vị trí Inverter</label>
+        <select id="s-inv-loc">
+          <option value="indoor">Trong nhà (có mái che)</option>
+          <option value="outdoor">Ngoài trời</option>
+          <option value="wall">Tường ngoài</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Tổng chiều dài dây DC (m)</label>
+        <div class="input-unit"><input type="number" id="s-cable-len" placeholder="50"><span class="unit-label">m</span></div>
+      </div>
+      <div class="form-group"><label>Tiết diện dây DC</label>
+        <select id="s-cable-size">
+          <option value="4">4 mm² (≤ 20m)</option>
+          <option value="6" selected>6 mm² (20–40m)</option>
+          <option value="10">10 mm² (> 40m)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🔋 Pin Lưu Trữ & Hệ Thống</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Cần pin lưu trữ?</label>
+        <div class="radio-group" id="battery-yn">
+          <div class="radio-btn selected" data-val="yes" onclick="selectRadio(this,'battery-yn');toggleBattery()">Có (Hybrid)</div>
+          <div class="radio-btn" data-val="no" onclick="selectRadio(this,'battery-yn');toggleBattery()">Không (On-Grid)</div>
+        </div>
+      </div>
+
+      <div class="form-group" id="battery-type-group">
+        <label>Loại pin lưu trữ</label>
+        <select id="s-batt-type" onchange="updateBattInfo()">
+          <option value="">-- Chọn loại pin --</option>
+        </select>
+        <div id="batt-info-line" style="font-size:11px;color:var(--teal);margin-top:4px;font-weight:500"></div>
+      </div>
+
+      <div class="form-group" id="battery-hours-group"><label>Thời gian dự phòng ban đêm (giờ)</label>
+        <div class="input-unit"><input type="number" id="s-batt-hours" placeholder="6" min="1" max="12" oninput="updateBattCalc()"><span class="unit-label">h</span></div>
+      </div>
+      <div class="form-group" id="battery-load-group"><label>Tải ban đêm cần dự phòng (%)</label>
+        <div class="input-unit"><input type="number" id="s-batt-load-pct" placeholder="60" min="10" max="100" oninput="updateBattCalc()"><span class="unit-label">%</span></div>
+      </div>
+
+      <!-- Live batt calc result -->
+      <div class="form-group full" id="batt-calc-result" style="display:none">
+        <div style="background:var(--teal-light);border:1px solid #9FE1CB;border-radius:8px;padding:10px 14px;font-size:12px;line-height:1.8">
+          <strong style="color:var(--teal)">🔋 Tính toán pin lưu trữ:</strong>
+          <span id="batt-calc-detail"></span>
+        </div>
+      </div>
+
+      <div class="form-group"><label>Bán điện dư lên lưới?</label>
+        <div class="radio-group" id="net-meter">
+          <div class="radio-btn" data-val="yes" onclick="selectRadio(this,'net-meter')">Có bán</div>
+          <div class="radio-btn selected" data-val="no" onclick="selectRadio(this,'net-meter')">Không bán</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📝 Ghi Chú Khảo Sát</div>
+    <textarea id="s-note" placeholder="Tình trạng đặc biệt, yêu cầu riêng..."></textarea>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="clearSurvey()">🗑 Xóa Form</button>
+    <button class="btn btn-primary" onclick="calculate()">⚡ Tính Toán & Xem Báo Giá →</button>
+  </div>
+</div></div>
+<button class="fab-calc" onclick="calculate()">⚡ Tính Toán</button>
+
+<!-- ===== TAB 2: BÁO GIÁ ===== -->
+<div id="page-result" class="page"><div class="main">
+  <div class="result-header">
+    <h2 id="r-title">Chưa có dữ liệu</h2>
+    <p id="r-sub">Vui lòng hoàn thành khảo sát và nhấn "Tính Toán"</p>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-val" id="kpi-pv">–</div><div class="kpi-unit">kWp</div><div class="kpi-label">Công suất PV</div></div>
+    <div class="kpi-card"><div class="kpi-val" id="kpi-panels">–</div><div class="kpi-unit">tấm</div><div class="kpi-label">Số tấm pin</div></div>
+    <div class="kpi-card"><div class="kpi-val" id="kpi-batt">–</div><div class="kpi-unit">kWh</div><div class="kpi-label">Pin lưu trữ</div></div>
+    <div class="kpi-card"><div class="kpi-val" id="kpi-payback">–</div><div class="kpi-unit">năm</div><div class="kpi-label">Hoàn vốn</div></div>
+  </div>
+  <!-- Chọn chủng loại thiết bị -->
+  <div class="card" id="device-selector-card">
+    <div class="card-title">🔧 Điều Chỉnh Chủng Loại Thiết Bị</div>
+    <div class="form-grid cols-3">
+      <div class="form-group">
+        <label>Tấm pin</label>
+        <select id="sel-panel" onchange="onDeviceChange()"></select>
+      </div>
+      <div class="form-group">
+        <label>Inverter</label>
+        <select id="sel-inverter" onchange="onDeviceChange()"></select>
+      </div>
+      <div class="form-group" id="sel-battery-group">
+        <label>Pin lưu trữ</label>
+        <select id="sel-battery" onchange="onDeviceChange()"></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="profit-bar">
+    <label>💹 Lợi nhuận kỳ vọng:</label>
+    <div class="input-unit" style="width:90px"><input type="number" id="profit-pct" value="15" min="0" max="100" oninput="updateQuoteFromProfit()"><span class="unit-label">%</span></div>
+    <span style="font-size:13px;color:var(--gray-text)">Giá vốn:</span>
+    <strong id="cost-total-display" style="color:var(--navy);font-size:15px">–</strong>
+    <span style="font-size:13px;color:var(--gray-text);margin-left:14px">Giá bán KH:</span>
+    <strong id="quote-total-display" style="color:var(--orange);font-size:16px">–</strong>
+  </div>
+  <div class="card">
+    <div class="card-title">📋 Báo Giá Chi Tiết <span style="font-size:11px;font-weight:400;color:var(--gray-text);text-transform:none;letter-spacing:0">(Chỉnh trực tiếp từng hạng mục)</span></div>
+    <div style="overflow-x:auto">
+      <table class="quote-table" id="quote-table">
+        <thead><tr>
+          <th style="width:36px">STT</th><th>Hạng mục</th><th style="width:60px">ĐVT</th>
+          <th style="width:56px">SL</th><th style="width:126px">Đơn giá (đ)</th><th style="width:136px">Thành tiền (đ)</th>
+        </tr></thead>
+        <tbody id="quote-body"></tbody>
+      </table>
+    </div>
+  </div>
+  <!-- QUOTE DOCUMENT - hiển thị & in -->
+  <div class="quote-doc" id="quote-doc">
+    <div class="qd-header">
+      <div class="qd-top">
+        <div class="qd-company">
+          <strong id="qd-company-name">CÔNG TY CỔ PHẦN ĐẦU TƯ NAM VIỆT HƯNG</strong>
+          <span id="qd-company-addr">Số 84 đường 11, KP5, P. Linh Xuân, TP. Thủ Đức, TP. HCM</span><br>
+          MST: <span id="qd-company-tax">0309945293</span> | ☎ <span id="qd-company-phone">0909 xxx xxx</span><br>
+          Email: <span id="qd-company-email">Info@namviethung.com.vn</span>
+        </div>
+        <div class="qd-republic">
+          <div class="republic-title">Cộng hòa xã hội chủ nghĩa Việt Nam</div>
+          <div class="republic-motto">Độc lập – Tự do – Hạnh phúc</div>
+          <div class="republic-underline"></div>
+        </div>
+      </div>
+      <div class="qd-title-block">
+        <h1>Báo Giá Hệ Thống Điện Mặt Trời Áp Mái</h1>
+        <div class="qd-subtitle" id="qd-subtitle">–</div>
+      </div>
+    </div>
+
+    <div class="qd-meta">
+      <div class="qd-meta-row"><span class="mk">Số báo giá:</span><span class="mv" id="qd-bgnum">–</span></div>
+      <div class="qd-meta-row"><span class="mk">Ngày lập:</span><span class="mv" id="qd-date">–</span></div>
+      <div class="qd-meta-row"><span class="mk">Nhân viên tư vấn:</span><span class="mv" id="qd-staff">–</span></div>
+      <div class="qd-meta-row"><span class="mk">Hiệu lực báo giá:</span><span class="mv">15 ngày kể từ ngày lập</span></div>
+    </div>
+
+    <div class="qd-customer">
+      <div class="qd-customer-title">Thông Tin Khách Hàng</div>
+      <div class="qd-customer-grid">
+        <div><span style="color:var(--gray-text)">Tên khách hàng: </span><strong id="qd-cname">–</strong></div>
+        <div><span style="color:var(--gray-text)">Số điện thoại: </span><strong id="qd-cphone">–</strong></div>
+        <div style="grid-column:1/-1"><span style="color:var(--gray-text)">Địa chỉ lắp đặt: </span><strong id="qd-caddr">–</strong></div>
+        <div><span style="color:var(--gray-text)">Loại điện: </span><span id="qd-electype">–</span></div>
+        <div><span style="color:var(--gray-text)">Tiêu thụ: </span><span id="qd-kwh">–</span></div>
+      </div>
+    </div>
+
+    <div class="qd-body">
+      <div class="qd-section-title">Thông Số Kỹ Thuật Hệ Thống</div>
+      <div class="qd-specs" id="qd-specs">–</div>
+
+      <div class="qd-section-title">Báo Giá Chi Tiết</div>
+      <table class="qd-table" id="qd-table">
+        <thead><tr>
+          <th style="width:32px">STT</th><th>Hạng mục / Thiết bị</th>
+          <th style="width:50px">ĐVT</th><th style="width:46px">SL</th>
+          <th style="width:110px">Đơn giá (đ)</th><th style="width:120px">Thành tiền (đ)</th>
+        </tr></thead>
+        <tbody id="qd-body"></tbody>
+      </table>
+
+      <div class="qd-section-title">Hiệu Quả Đầu Tư</div>
+      <div class="qd-savings" id="qd-savings">–</div>
+
+      <div class="qd-section-title">Điều Khoản Bảo Hành & Thanh Toán</div>
+      <div class="qd-terms" id="qd-terms">–</div>
+    </div>
+
+    <div class="qd-device-imgs" id="qd-device-imgs" style="display:none">
+      <div class="qd-device-imgs-title">📷 Hình Ảnh Thiết Bị</div>
+      <div class="qd-img-grid" id="qd-img-grid"></div>
+    </div>
+
+    <div class="qd-sign">
+      <div class="qd-sign-block">
+        <div class="sign-title">KHÁCH HÀNG<br><span style="font-size:10px;color:var(--gray-text)">(Ký, ghi rõ họ tên)</span></div>
+        <div class="sign-name" id="qd-cname-sign">–</div>
+      </div>
+      <div class="qd-sign-block">
+        <div class="sign-title">TM. CÔNG TY CP ĐT NAM VIỆT HƯNG<br><span style="font-size:10px;color:var(--gray-text)">P. Tổng Giám Đốc</span></div>
+        <div class="sign-name">Ký tên & Đóng dấu</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fin-grid">
+    <div class="card">
+      <div class="card-title">💰 Hiệu Quả Tài Chính</div>
+      <div class="fin-row"><span>Tổng đầu tư (có VAT)</span><span class="fin-val" id="f-total">–</span></div>
+      <div class="fin-row"><span>Tiết kiệm năm 1</span><span class="fin-val green" id="f-save1">–</span></div>
+      <div class="fin-row"><span>💡 Tiền điện còn trả EVN/tháng</span><span class="fin-val" id="f-remain-bill" style="color:var(--teal)">–</span></div>
+      <div class="fin-row highlight"><span>Thời gian hoàn vốn</span><span class="fin-val" id="f-payback">–</span></div>
+      <div class="fin-row"><span>Tổng tiết kiệm 25 năm</span><span class="fin-val green" id="f-save25">–</span></div>
+      <div class="fin-row"><span>ROI 25 năm</span><span class="fin-val" id="f-roi">–</span></div>
+      <div class="fin-row"><span>Sản lượng năm 1</span><span class="fin-val" id="f-gen">–</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🌱 Môi Trường & Kỹ Thuật</div>
+      <div class="fin-row"><span>Điện tiêu thụ / tháng</span><span class="fin-val" id="e-kwh">–</span></div>
+      <div class="fin-row"><span>Điện PV phát / tháng</span><span class="fin-val" id="e-gen">–</span></div>
+      <div class="fin-row"><span>Giờ nắng đỉnh (PSH)</span><span class="fin-val" id="e-psh">–</span></div>
+      <div class="fin-row"><span>Performance Ratio</span><span class="fin-val" id="e-pr">–</span></div>
+      <div class="fin-row"><span>Giảm CO₂ / năm</span><span class="fin-val green" id="e-co2">–</span></div>
+      <div class="fin-row"><span>Tương đương trồng cây</span><span class="fin-val green" id="e-trees">–</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📈 Biểu Đồ Tích Lũy Lợi Nhuận</div>
+    <div id="payback-chart"></div>
+  </div>
+  <div class="card no-print" id="calc-trace-card" style="display:none">
+    <div class="card-title">🧮 Chi Tiết Tính Toán</div>
+    <div id="calc-trace-body"></div>
+  </div>
+  <div class="btn-row no-print">
+    <button class="btn btn-secondary" onclick="switchTab('survey')">← Sửa Khảo Sát</button>
+    <!-- FIX LỖI 12: Nút Lưu rõ ràng với trạng thái -->
+    <button class="btn btn-teal" id="save-quote-btn" onclick="handleSaveQuote()" style="display:none">
+      💾 Lưu Báo Giá
+    </button>
+    <span id="save-status-badge" style="display:none;font-size:12px;padding:6px 12px;border-radius:6px;font-weight:600"></span>
+    <button class="btn btn-secondary" onclick="window.print()">🖨 In Báo Giá</button>
+    <button class="btn btn-secondary" onclick="exportExcel()">📊 Xuất CSV</button>
+    <button class="btn btn-primary" onclick="exportPDF()">📄 In / PDF</button>
+    <button class="btn btn-teal" onclick="saveToCompare()">🔀 Lưu So Sánh</button>
+  </div>
+</div></div>
+
+<!-- ===== TAB 3: CHI TIẾT TÍNH TOÁN ===== -->
+<div id="page-detail" class="page"><div class="main">
+  <div id="detail-placeholder" style="padding:60px 0;text-align:center;color:var(--gray-text)">
+    <div style="font-size:48px;margin-bottom:12px">🔍</div>
+    <p style="font-size:15px;font-weight:600">Chưa có dữ liệu tính toán</p>
+    <p style="font-size:13px;margin-top:6px">Hãy nhập thông tin và nhấn <strong>⚡ Tính Toán</strong> ở tab Khảo Sát.</p>
+  </div>
+  <div id="detail-content" style="display:none"></div>
+</div></div>
+
+<!-- ===== TAB 4: SO SÁNH PHƯƠNG ÁN ===== -->
+<div id="page-compare" class="page"><div class="main">
+  <div class="card">
+    <div class="card-title">🔀 So Sánh Phương Án</div>
+    <div class="notice" id="compare-hint">Nhấn <strong>🔀 Lưu So Sánh</strong> từ tab Báo Giá để thêm phương án (tối đa 3). Có thể so sánh On-Grid vs Hybrid, công suất khác nhau, v.v.</div>
+    <div id="compare-table-wrap"></div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-secondary" onclick="clearCompare()">🗑 Xóa tất cả</button>
+      <button class="btn btn-secondary" onclick="exportCompareExcel()">📊 Xuất CSV So Sánh</button>
+    </div>
+  </div>
+</div></div>
+
+<!-- ===== TAB 4: QUẢN LÝ GIÁ ===== -->
+<div id="page-db" class="page"><div class="main">
+
+  <!-- IMPORT / EXPORT BẢNG GIÁ -->
+  <div class="card">
+    <div class="card-title">📦 Sao Lưu & Khôi Phục Bảng Giá</div>
+    <div class="notice">
+      <strong>App chạy offline.</strong> Nhập dữ liệu bằng 2 cách:<br>
+      • <strong>📊 Nhập từ Excel</strong> → chọn file <em>NVH_Solar_Database_Template.xlsx</em> (cần internet lần đầu để tải thư viện)<br>
+      • <strong>📥 Khôi phục JSON</strong> → khôi phục từ file .json đã xuất trước đó<br>
+      Sau khi nhập, nhấn <strong>💾 Lưu DB</strong> để lưu vào máy.
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <button class="btn btn-teal" onclick="exportDBJson()">📦 Xuất JSON Bảng Giá</button>
+      <button class="btn btn-primary" onclick="document.getElementById('excel-input').click()" style="background:var(--teal);font-size:14px;padding:10px 20px">📊 Nhập từ Excel (.xlsx)</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('json-input').click()">📥 Khôi phục JSON</button>
+    </div>
+    <div class="import-zone" id="import-zone" onclick="document.getElementById('excel-input').click()"
+      ondragover="event.preventDefault();this.classList.add('drag')"
+      ondragleave="this.classList.remove('drag')"
+      ondrop="handleDrop(event)">
+      <div class="iz-icon">📊</div>
+      <p>Kéo thả file <strong>Excel (.xlsx)</strong> hoặc <strong>JSON</strong> vào đây</p>
+      <p style="margin-top:4px;font-size:12px">Dùng file mẫu <strong>NVH_Solar_Database_Template.xlsx</strong> để nhập dữ liệu thiết bị & giá</p>
+    </div>
+    <input type="file" id="excel-input" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this.files[0])">
+    <input type="file" id="json-input" accept=".json" style="display:none" onchange="importExcel(this.files[0])">
+    <div id="import-status"></div>
+    <div id="db-summary" style="margin-top:10px;font-size:13px;color:var(--gray-text);padding:8px 12px;background:#f8f9fa;border-radius:6px;display:none"></div>
+    <div id="device-img-upload" style="margin-top:12px;display:none">
+      <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">📷 Hình ảnh thiết bị (hiển thị cuối báo giá)</div>
+      <div id="dev-img-list"></div>
+    </div>
+  </div>
+
+  <!-- Vật tư -->
+  <div class="card">
+    <div class="card-title">🔧 Định Mức Vật Tư & Nhân Công</div>
+    <div id="materials-list"></div>
+    <button class="add-btn" onclick="addMaterial()">+ Thêm hạng mục</button>
+    <p style="margin-top:10px;font-size:12px;color:var(--gray-text)">💡 Công thức QTY: <strong>panels</strong> = số tấm · <strong>cable</strong> = m dây · <strong>kwp</strong> = kWp. Giá đơn có thể là số hoặc công thức VD: <strong>kwp*850000</strong></p>
+  </div>
+
+  <!-- Danh sách nhân viên -->
+  <div class="card">
+    <div class="card-title">👥 Danh Sách Nhân Viên Khảo Sát</div>
+    <div class="db-row header" style="grid-template-columns:2fr 1.5fr 1fr auto"><span>Họ tên</span><span>Số điện thoại</span><span>Chức vụ</span><span></span></div>
+    <div id="staff-list-db"></div>
+    <button class="add-btn" onclick="addStaff()">+ Thêm nhân viên</button>
+    <p style="margin-top:8px;font-size:12px;color:var(--gray-text)">💡 Danh sách này hiện ra gợi ý khi nhập nhân viên khảo sát ở tab Khảo Sát.</p>
+  </div>
+
+  <!-- Cấu hình công ty & điều khoản -->
+  <div class="card">
+    <div class="card-title">🏢 Thông Tin Công Ty & Báo Giá</div>
+    <div class="form-grid">
+      <div class="form-group" style="grid-column:1/-1"><label>🏢 Tên công ty (hiển thị trên báo giá)</label><input id="cfg-company-name" placeholder="CÔNG TY CỔ PHẦN ĐẦU TƯ NAM VIỆT HƯNG" style="font-weight:600"></div>
+      <div class="form-group" style="grid-column:1/-1"><label>📍 Địa chỉ</label><input id="cfg-company-addr" placeholder="Số 84 đường 11, KP5, P. Linh Xuân, TP. Thủ Đức, TP. HCM"></div>
+      <div class="form-group"><label>🪪 Mã số thuế (MST)</label><input id="cfg-company-tax" placeholder="0309945293"></div>
+      <div class="form-group"><label>📞 Số điện thoại liên hệ</label><input id="cfg-company-phone" placeholder="0909 xxx xxx"></div>
+      <div class="form-group" style="grid-column:1/-1"><label>✉️ Email</label><input id="cfg-company-email" placeholder="info@congty.com.vn" type="email"></div>
+      <div class="form-group"><label>Tên nhân viên tư vấn (mặc định)</label><input id="cfg-staff" placeholder="Nguyễn Văn B – 0909 xxx xxx"></div>
+      <div class="form-group"><label>Prefix số báo giá</label><input id="cfg-bgprefix" placeholder="NVH" value="NVH"></div>
+    </div>
+    <div class="form-group" style="margin-top:10px">
+      <label>Điều khoản bảo hành & thanh toán (hiển thị trong báo giá)</label>
+      <textarea id="cfg-terms" rows="8" placeholder="Dán điều khoản vào đây..."></textarea>
+    </div>
+  </div>
+
+  <!-- Cấu hình tính toán -->
+  <div class="card">
+    <div class="card-title">⚙️ Thông Số Tính Toán</div>
+    <div class="form-grid cols-3">
+      <div class="form-group"><label>PR – Hiệu suất hệ thống (%)</label><div class="input-unit"><input type="number" id="cfg-pr" value="80" min="50" max="100"><span class="unit-label">%</span></div></div>
+      <div class="form-group"><label>Hệ số an toàn thiết kế (%)</label><div class="input-unit"><input type="number" id="cfg-safety" value="115" min="100" max="150"><span class="unit-label">%</span></div></div>
+      <div class="form-group"><label>Tăng giá điện hàng năm (%)</label><div class="input-unit"><input type="number" id="cfg-elec-rise" value="3" min="0" max="20"><span class="unit-label">%</span></div></div>
+      <div class="form-group"><label>Giá bán điện dư EVN (đ/kWh)</label><div class="input-unit"><input type="number" id="cfg-sell-price" value="671"><span class="unit-label">đ</span></div></div>
+      <div class="form-group"><label>Suy giảm tấm pin (%/năm)</label><div class="input-unit"><input type="number" id="cfg-degradation" value="0.5" step="0.1"><span class="unit-label">%</span></div></div>
+      <div class="form-group"><label>VAT (%)</label><div class="input-unit"><input type="number" id="cfg-vat" value="8"><span class="unit-label">%</span></div></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="resetDB()">🔄 Khôi phục mặc định</button>
+    <button class="btn btn-primary" onclick="saveDB()">💾 Lưu tất cả</button>
+  </div>
+</div></div>
+
+<script>
+window.onerror=function(msg,src,line,col,err){
+  alert('LOI JS:\n'+msg+'\nLine:'+line);
+  return false;
+};
+// ===== DEFAULT DB =====
+const DEFAULT_DB = {
+  panels:[
+    {name:'Mono PERC 550W',watt:550,cost:2200000,area:1.7},
+    {name:'Mono PERC 580W',watt:580,cost:2400000,area:1.8},
+    {name:'Half-Cell TOPCon 600W',watt:600,cost:2800000,area:1.9}
+  ],
+  inverters:[
+    {name:'On-Grid Inverter 10kW',kw:10,cost:18000000,eff:97},
+    {name:'Hybrid Inverter 5kW',kw:5,cost:25000000,eff:94},
+    {name:'Hybrid Inverter 8kW',kw:8,cost:32000000,eff:94},
+    {name:'Hybrid Inverter 10kW',kw:10,cost:35000000,eff:94}
+  ],
+  batteries:[
+    {name:'LFP LiFePO4 5kWh',kwh:5,cost:27500000,dod:90},
+    {name:'LFP LiFePO4 10kWh',kwh:10,cost:50000000,dod:90}
+  ],
+  materials:[
+    {name:'Mini Rail, Pat Z',unit:'Cái',qty_formula:'panels*2.25',cost:45000},
+    {name:'Kẹp giữa',unit:'Cái',qty_formula:'panels*1.5',cost:12000},
+    {name:'Kẹp biên',unit:'Cái',qty_formula:'panels*0.7',cost:12000},
+    {name:'Máng cáp & phụ kiện',unit:'Gói',qty_formula:'1',cost:1500000},
+    {name:'Cáp tiếp địa 10mm',unit:'Mét',qty_formula:'30',cost:34000},
+    {name:'Kẹp tiếp địa',unit:'Cái',qty_formula:'2',cost:45000},
+    {name:'Cọc tiếp địa 2.4m',unit:'Mét',qty_formula:'2.4',cost:135000},
+    {name:'Dây DC 4mm² đen',unit:'Mét',qty_formula:'cable*1',cost:24000},
+    {name:'Dây DC 4mm² đỏ',unit:'Mét',qty_formula:'cable*1',cost:24000},
+    {name:'Cáp AC',unit:'Gói',qty_formula:'1',cost:1500000},
+    {name:'Jack MC4',unit:'Cặp',qty_formula:'panels*0.25',cost:20000},
+    {name:'Tủ điện',unit:'Cái',qty_formula:'1',cost:3500000},
+    {name:'Gói vật tư phụ',unit:'Gói',qty_formula:'1',cost:2500000},
+    {name:'Nhân công lắp đặt',unit:'Gói',qty_formula:'1',cost_formula:'kwp*850000'}
+  ],
+  cfg:{loss:6,safety:115,elecRise:3,sellPrice:671,degradation:0.5,vat:8,pr:80},
+  staffList:[],
+  company:{
+    companyName:'CÔNG TY CỔ PHẦN ĐẦU TƯ NAM VIỆT HƯNG',
+    companyAddr:'Số 84 đường 11, KP5, P. Linh Xuân, TP. Thủ Đức, TP. HCM',
+    companyTax:'0309945293',
+    companyPhone:'0909 xxx xxx',
+    companyEmail:'Info@namviethung.com.vn',
+    staff:'',
+    bgprefix:'NVH',
+    terms:`BẢO HÀNH:\n• Tấm pin năng lượng mặt trời: Bảo hành hiệu suất 25 năm, bảo hành vật lý 12 năm.\n• Inverter/Biến tần: Bảo hành 5 năm theo hãng sản xuất.\n• Pin lưu trữ (Battery): Bảo hành 5 năm hoặc 6.000 chu kỳ sạc.\n• Kết cấu lắp đặt & hệ thống dây điện: Bảo hành 12 tháng.\n• Bảo trì định kỳ: 0,5–1%/năm trên giá trị hệ thống (không bắt buộc).\n\nTHANH TOÁN:\n• Đợt 1: 50% giá trị hợp đồng khi ký kết.\n• Đợt 2: 40% khi bàn giao thiết bị tại công trình.\n• Đợt 3: 10% sau khi nghiệm thu, hòa lưới thành công.\n\nCAM KẾT:\n• Thi công đúng tiến độ thỏa thuận trong hợp đồng.\n• Hướng dẫn vận hành và bàn giao hồ sơ kỹ thuật đầy đủ.\n• Hỗ trợ kỹ thuật từ xa trong suốt thời gian bảo hành.`
+  }
+};
+
+let DB={}, quoteItems=[], calcResult={};
+
+function loadDB(){
+  try{ DB=JSON.parse(localStorage.getItem('nvh_solar_db'))||JSON.parse(JSON.stringify(DEFAULT_DB)); }
+  catch{ DB=JSON.parse(JSON.stringify(DEFAULT_DB)); }
+  // Populate battery dropdown after DB loaded
+  setTimeout(()=>{
+    if(document.getElementById('s-batt-type')) populateBattDropdown();
+  },50);
+}
+function saveDB(){
+  DB.cfg={
+    pr:+document.getElementById('cfg-pr').value||80,
+    safety:+document.getElementById('cfg-safety').value,
+    elecRise:+document.getElementById('cfg-elec-rise').value,
+    sellPrice:+document.getElementById('cfg-sell-price').value,
+    degradation:+document.getElementById('cfg-degradation').value,
+    vat:+document.getElementById('cfg-vat').value
+  };
+  DB.company={
+    companyName:document.getElementById('cfg-company-name').value||DEFAULT_DB.company.companyName,
+    companyAddr:document.getElementById('cfg-company-addr').value||DEFAULT_DB.company.companyAddr,
+    companyTax:document.getElementById('cfg-company-tax').value||DEFAULT_DB.company.companyTax,
+    companyPhone:document.getElementById('cfg-company-phone').value||DEFAULT_DB.company.companyPhone,
+    companyEmail:document.getElementById('cfg-company-email').value||DEFAULT_DB.company.companyEmail,
+    staff:document.getElementById('cfg-staff').value,
+    bgprefix:document.getElementById('cfg-bgprefix').value||'NVH',
+    terms:document.getElementById('cfg-terms').value
+  };
+  // Lưu danh sách nhân viên từ UI
+  DB.staffList=[];
+  document.querySelectorAll('#staff-list-db .staff-row').forEach(row=>{
+    const inputs=row.querySelectorAll('input');
+    const name=inputs[0].value.trim(), phone=inputs[1].value.trim(), role=inputs[2].value.trim();
+    if(name) DB.staffList.push({name,phone,role});
+  });
+  localStorage.setItem('nvh_solar_db',JSON.stringify(DB));
+  populateStaffList();
+  showStatus('✅ Đã lưu cơ sở dữ liệu!','ok');
+}
+function resetDB(){
+  if(!confirm('Khôi phục về mặc định?'))return;
+  DB=JSON.parse(JSON.stringify(DEFAULT_DB));
+  localStorage.setItem('nvh_solar_db',JSON.stringify(DB));
+  renderDBPage();
+  showStatus('🔄 Đã khôi phục mặc định','ok');
+}
+
+// ===== EXCEL IMPORT =====
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('import-zone').classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if(file) importExcel(file);
+}
+
+function importExcel(file){
+  if(!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  const reader = new FileReader();
+
+  if(ext === 'json'){
+    reader.onload = function(e){
+      try{
+        const imported = JSON.parse(e.target.result);
+        if(imported.panels   && imported.panels.length)   DB.panels   = imported.panels;
+        if(imported.inverters&& imported.inverters.length) DB.inverters= imported.inverters;
+        if(imported.batteries&& imported.batteries.length)DB.batteries= imported.batteries;
+        if(imported.materials&& imported.materials.length)DB.materials= imported.materials;
+        if(imported.cfg) DB.cfg = Object.assign({}, DB.cfg, imported.cfg);
+        localStorage.setItem('nvh_solar_db', JSON.stringify(DB));
+        renderDBPage();
+        showStatus('Khoi phuc JSON thanh cong: '+DB.panels.length+' tam pin - '+DB.inverters.length+' inverter - '+DB.batteries.length+' pin luu tru - '+DB.materials.length+' vat tu', 'ok');
+      } catch(ex){
+        showStatus('Loi doc JSON: ' + ex.message, 'err');
+      }
+    };
+    reader.readAsText(file);
+
+  } else if(ext === 'xlsx' || ext === 'xls'){
+    if(typeof XLSX === 'undefined'){
+      showStatus('Dang tai thu vien Excel... Vui long thu lai sau 2 giay hoac kiem tra ket noi mang.', 'err');
+      return;
+    }
+    reader.onload = function(e){
+      try{
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, {type:'array', cellText:false, cellDates:true});
+
+        var panels=[], inverters=[], batteries=[], materials=[];
+
+        // === Sheet 1: Tam Pin ===
+        var ws1 = wb.Sheets[wb.SheetNames.find(function(n){return n.match(/tam\s*pin|panel/i);})||wb.SheetNames[0]];
+        if(ws1){
+          var rows = XLSX.utils.sheet_to_json(ws1, {header:1, defval:''});
+          // Tim dong header (co chu "Cong suat" hoac "Wp" hoac "Gia")
+          var hdrRow=-1;
+          for(var i=0;i<rows.length;i++){
+            var r=rows[i].join('|').toLowerCase();
+            if(r.includes('wp')||r.includes('cong suat')||r.includes('gia/tam')){hdrRow=i;break;}
+          }
+          if(hdrRow<0) hdrRow=2; // mac dinh row 3 (index 2)
+          for(var i=hdrRow+1;i<rows.length;i++){
+            var r=rows[i];
+            if(!r[0]||String(r[0]).trim()==='') continue;
+            var rawName=String(r[0]||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
+            var obj={name:rawName};
+            if(r[1]&&+r[1]>0) obj.watt=+r[1];
+            if(r[2]&&+r[2]>0) obj.cost=+r[2]; else obj.cost=0;
+            var colD=r[3];
+            if(colD!==undefined&&colD!==null&&colD!==''){
+              var colDStr=String(colD).replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
+              if(!isNaN(+colD)&&+colD>0) obj.area=+colD;
+              else if(colDStr) obj.desc=colDStr;
+            }
+            if(r[4]&&String(r[4]).trim()) obj.brand=String(r[4]).trim();
+            if(r[5]&&String(r[5]).trim()) obj.note=String(r[5]).trim();
+            if(obj.name) panels.push(obj);
+          }
+        }
+
+        // === Sheet 2: Inverter ===
+        var ws2 = wb.Sheets[wb.SheetNames.find(function(n){return n.match(/inverter|bien\s*tan/i);})||wb.SheetNames[1]];
+        if(ws2){
+          var rows = XLSX.utils.sheet_to_json(ws2, {header:1, defval:''});
+          var hdrRow=2;
+          for(var i=0;i<rows.length;i++){
+            var r=rows[i].join('|').toLowerCase();
+            if(r.includes('kw')||r.includes('hieu suat')||r.includes('gia/bo')){hdrRow=i;break;}
+          }
+          for(var i=hdrRow+1;i<rows.length;i++){
+            var r=rows[i];
+            if(!r[0]||String(r[0]).trim()==='') continue;
+            var rawInvName=String(r[0]||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
+            var obj={name:rawInvName};
+            if(r[1]&&+r[1]>0) obj.kw=+r[1];
+            if(r[2]&&+r[2]>0) obj.cost=+r[2]; else obj.cost=0;
+            var effVal=r[3];
+            if(effVal!==undefined&&effVal!==null&&effVal!==''){
+              var effStr=String(effVal).replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
+              if(!isNaN(+effVal)&&+effVal>0) obj.eff=+effVal;
+              else if(effStr) obj.desc=effStr;
+            }
+            if(r[4]&&String(r[4]).trim()) obj.type=String(r[4]).trim();
+            if(r[5]&&String(r[5]).trim()) obj.note=String(r[5]).trim();
+            if(obj.name) inverters.push(obj);
+          }
+        }
+
+        // === Sheet 3: Battery ===
+        var ws3 = wb.Sheets[wb.SheetNames.find(function(n){return n.match(/battery|pin\s*luu|acquy/i);})||wb.SheetNames[2]];
+        if(ws3){
+          var rows = XLSX.utils.sheet_to_json(ws3, {header:1, defval:''});
+          var hdrRow=2;
+          for(var i=0;i<rows.length;i++){
+            var r=rows[i].join('|').toLowerCase();
+            if(r.includes('kwh')||r.includes('dod')||r.includes('gia/bo')){hdrRow=i;break;}
+          }
+          for(var i=hdrRow+1;i<rows.length;i++){
+            var r=rows[i];
+            if(!r[0]||String(r[0]).trim()==='') continue;
+            var rawBattName=String(r[0]||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
+            var obj={name:rawBattName};
+            if(r[1]&&+r[1]>0) obj.kwh=+r[1];
+            if(r[2]&&+r[2]>0) obj.cost=+r[2]; else obj.cost=0;
+            var dodVal=r[3];
+            if(dodVal!==undefined&&dodVal!==null&&dodVal!==''){
+              var dodStr=String(dodVal).replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
+              if(!isNaN(+dodVal)&&+dodVal>0) obj.dod=+dodVal;
+              else if(dodStr) obj.desc=dodStr;
+            }
+            if(r[4]&&String(r[4]).trim()) obj.type=String(r[4]).trim();
+            if(r[5]&&String(r[5]).trim()) obj.note=String(r[5]).trim();
+            if(obj.name) batteries.push(obj);
+          }
+        }
+
+        // === Sheet 4: Vat Tu ===
+        var ws4 = wb.Sheets[wb.SheetNames.find(function(n){return n.match(/vat\s*tu|phu\s*kien|material/i);})||wb.SheetNames[3]];
+        if(ws4){
+          var rows = XLSX.utils.sheet_to_json(ws4, {header:1, defval:''});
+          var hdrRow=2;
+          for(var i=0;i<rows.length;i++){
+            var r=rows[i].join('|').toLowerCase();
+            if(r.includes('don vi')||r.includes('cong thuc')||r.includes('don gia')){hdrRow=i;break;}
+          }
+          for(var i=hdrRow+1;i<rows.length;i++){
+            var r=rows[i];
+            if(!r[0]||String(r[0]).trim()==='') continue;
+            if(String(r[0]).trim().startsWith('Vi du')) continue;
+            var obj={name:String(r[0]).trim(), unit:String(r[1]||'Goi').trim()};
+            if(r[2]&&String(r[2]).trim()) obj.qty_formula=String(r[2]).trim();
+            if(r[3]&&+r[3]>0) obj.cost=+r[3];
+            if(r[4]&&String(r[4]).trim()) obj.cost_formula=String(r[4]).trim();
+            if(obj.name && (obj.cost||obj.cost_formula)) materials.push(obj);
+          }
+        }
+
+        // === Sheet 5: Cau Hinh ===
+        var ws5 = wb.Sheets[wb.SheetNames.find(function(n){return n.match(/cau\s*hinh|config|thong\s*so/i);})||wb.SheetNames[4]];
+        if(ws5){
+          var rows = XLSX.utils.sheet_to_json(ws5, {header:1, defval:''});
+          var cfgMap={loss:'loss',safety:'safety',elecRise:'elecRise',sellPrice:'sellPrice',degradation:'degradation',vat:'vat',pr:'pr'};
+          rows.forEach(function(r){
+            var key=String(r[1]||'').trim();
+            var val=r[2];
+            if(cfgMap[key]!==undefined && val!=='' && !isNaN(+val)){
+              DB.cfg[cfgMap[key]]=+val;
+            }
+          });
+        }
+
+        // Ghi vao DB
+        var msg=[];
+        if(panels.length){DB.panels=panels;msg.push(panels.length+' tam pin');}
+        if(inverters.length){DB.inverters=inverters;msg.push(inverters.length+' inverter');}
+        if(batteries.length){DB.batteries=batteries;msg.push(batteries.length+' pin luu tru');}
+        if(materials.length){DB.materials=materials;msg.push(materials.length+' vat tu');}
+
+        if(msg.length===0){
+          showStatus('Khong doc duoc du lieu. Kiem tra file Excel co dung mau khong.','err');
+          return;
+        }
+
+        localStorage.setItem('nvh_solar_db', JSON.stringify(DB));
+        renderDBPage();
+        showStatus('Nhap Excel thanh cong: '+msg.join(' - '),'ok');
+
+      } catch(ex){
+        showStatus('Loi doc Excel: '+ex.message,'err');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+
+  } else {
+    showStatus('Chi ho tro file .xlsx hoac .json','err');
+  }
+}
+
+function exportDBJson(){
+  const data={
+    panels:   DB.panels,
+    inverters:DB.inverters,
+    batteries:DB.batteries,
+    materials:DB.materials,
+    cfg:      DB.cfg
+  };
+  downloadBlob(
+    `BangGia_NVH_${new Date().toISOString().slice(0,10)}.json`,
+    JSON.stringify(data, null, 2),
+    'application/json'
+  );
+}
+
+function showStatus(msg,type){
+  const el=document.getElementById('import-status');
+  if(el){el.className='import-status '+type;el.textContent=msg;el.style.display='block';}
+  else alert(msg);
+}
+
+// ===== TABS =====
+function switchTab(tab){
+  try{
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    const page=document.getElementById('page-'+tab);
+    if(!page){alert('Loi: khong tim thay page-'+tab);return;}
+    page.classList.add('active');
+    const idx={survey:0,result:1,detail:2,compare:3,db:4};
+    const tabEl=document.querySelectorAll('.tab')[idx[tab]];
+    if(tabEl) tabEl.classList.add('active');
+    if(tab==='db') renderDBPage();
+    if(tab==='compare') renderCompareTable();
+    if(tab==='detail') renderDetailTab();
+    const fab=document.querySelector('.fab-calc');
+    if(fab) fab.style.display=(tab==='survey'?'':'none');
+  }catch(err){alert('LOI switchTab: '+tab+' - '+err.message);}
+}
+
+// ===== RADIO =====
+function selectRadio(el,group){
+  document.querySelectorAll(`#${group} .radio-btn`).forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function getRadioVal(group){
+  const sel=document.querySelector(`#${group} .radio-btn.selected`);
+  return sel?sel.dataset.val:null;
+}
+function toggleElecInput(){
+  const isKwh=getRadioVal('elec-input-type')==='kwh';
+  document.getElementById('elec-label').textContent=isKwh?'Điện tiêu thụ / tháng':'Tiền điện / tháng';
+  document.getElementById('elec-unit').textContent=isKwh?'kWh':'đ';
+  document.getElementById('s-kwh').placeholder=isKwh?'900':'3000000';
+}
+function toggleBattery(){
+  const has=getRadioVal('battery-yn')==='yes';
+  ['battery-type-group','battery-hours-group','battery-load-group'].forEach(id=>{
+    document.getElementById(id).style.display=has?'':'none';
+  });
+  if(!document.getElementById('batt-calc-result')) return;
+  document.getElementById('batt-calc-result').style.display='none';
+  if(has) populateBattDropdown();
+}
+
+function populateBattDropdown(){
+  const sel=document.getElementById('s-batt-type');
+  const current=sel.value;
+  sel.innerHTML='<option value="">-- Chọn loại pin --</option>';
+  DB.batteries.forEach((b,i)=>{
+    const opt=document.createElement('option');
+    opt.value=i;
+    opt.textContent=`${b.name} – ${b.kwh}kWh (DOD ${b.dod}%)`;
+    if(String(i)===current) opt.selected=true;
+    sel.appendChild(opt);
+  });
+  // Auto-select first if none
+  if(sel.value==='' && DB.batteries.length) sel.value='0';
+  updateBattInfo();
+}
+
+function updateBattInfo(){
+  const idx=document.getElementById('s-batt-type').value;
+  if(idx===''||!DB.batteries[+idx]){
+    document.getElementById('batt-info-line').textContent='';
+    return;
+  }
+  const b=DB.batteries[+idx];
+  const usable=+(b.kwh*b.dod/100).toFixed(1);
+  document.getElementById('batt-info-line').textContent=
+    `Dung lượng thực dùng: ${usable} kWh/module · Giá gốc: ${b.cost.toLocaleString('vi-VN')}đ`;
+  updateBattCalc();
+}
+
+function updateBattCalc(){
+  const has=getRadioVal('battery-yn')==='yes';
+  if(!has){document.getElementById('batt-calc-result').style.display='none';return;}
+  const idx=document.getElementById('s-batt-type').value;
+  if(idx===''||!DB.batteries[+idx]) return;
+
+  const rawVal=+document.getElementById('s-kwh').value||0;
+  if(!rawVal) return;
+  const isKwh=getRadioVal('elec-input-type')==='kwh';
+  const kwh=isKwh?rawVal:moneyToKwh(rawVal);
+  const dayPct=+document.getElementById('s-day-pct').value/100||0.4;
+  const nightPct=1-dayPct;
+
+  const b=DB.batteries[+idx];
+  const usablePerMod=b.kwh*b.dod/100;
+
+  const mode=getRadioVal('target-mode')||'cut56';
+  const targetBillVal=+document.getElementById('s-target-bill').value||0;
+
+  let battMonthly, labelHtml;
+
+  if(targetBillVal > 0){
+    // Chế độ mục tiêu tiền điện
+    // PV bù 100% ban ngày → lưới còn lại = ban đêm
+    // Pin phải bù: nightDemand − targetGridKwh
+    const targetGridKwh = inverseCalcBill(targetBillVal);
+    const nightDemandKwh = kwh * nightPct;
+    battMonthly = Math.max(0, nightDemandKwh - targetGridKwh);
+    const remainBill = calcBill(targetGridKwh);
+    const solarMonthly = kwh * dayPct + battMonthly / 0.95;
+    labelHtml = `
+      &nbsp;Mục tiêu tiền điện: <strong>${fmtVnd(targetBillVal)}/tháng</strong><br>
+      &nbsp;→ Còn mua EVN: <strong>${targetGridKwh} kWh/tháng</strong> (bill thực: ${fmtVnd(remainBill)})<br>
+      &nbsp;→ Solar cần sản xuất: <strong>${solarMonthly.toFixed(0)} kWh/tháng</strong><br>
+      &nbsp;Pin cấp ban đêm (nhu cầu đêm ${nightDemandKwh.toFixed(0)} − lưới ${targetGridKwh}): <strong>${battMonthly.toFixed(1)} kWh/tháng</strong>`;
+  } else {
+    // Chế độ cắt bậc cao (mặc định)
+    const highTierKwh = kwh > 300 ? (kwh - 300) : 0;
+    battMonthly = highTierKwh * nightPct;
+    labelHtml = `
+      &nbsp;Bậc 5+6: <strong>${highTierKwh.toFixed(0)} kWh/tháng</strong> (${kwh} kWh − 300 kWh ngưỡng)<br>
+      &nbsp;Phần ban đêm (${Math.round(nightPct*100)}%): <strong>${battMonthly.toFixed(1)} kWh/tháng</strong>`;
+  }
+
+  const battDaily   = battMonthly / 30;
+  const battRaw     = battDaily / (b.dod/100);
+  const numModules  = Math.max(1, Math.ceil(battRaw / b.kwh));
+  const totalBattKwh = numModules * b.kwh;
+  const totalUsable  = numModules * usablePerMod;
+
+  // Tính tiền điện còn lại dự kiến sau khi lắp hệ thống
+  const pvMonthEst = totalUsable * 30; // pin cấp đêm
+  const remainKwhEst = Math.max(0, kwh - pvMonthEst * nightPct / nightPct); // rough
+  const remainBillEst = calcBill(Math.max(0, kwh*(1-nightPct) > pvMonthEst ? kwh - pvMonthEst : kwh*dayPct));
+
+  document.getElementById('batt-calc-result').style.display='block';
+  document.getElementById('batt-calc-detail').innerHTML=`${labelHtml}<br>
+    &nbsp;→ kWh/ngày: ${battDaily.toFixed(2)} ÷ DOD ${b.dod}% = ${battRaw.toFixed(2)} kWh thô → làm tròn lên<br>
+    &nbsp;→ Cần <strong style="color:var(--teal)">${numModules} module × ${b.kwh}kWh = <span style="font-size:13px">${totalBattKwh} kWh</span> (usable: ${totalUsable.toFixed(1)} kWh)</strong>
+  `;
+}
+
+// ===== CALC =====
+// FIX LỖI 5: EVN_TIERS dùng prev-based bands nhất quán
+// Bậc 1: 0-50 (50 kWh), Bậc 2: 51-100 (50 kWh), Bậc 3: 101-200 (100 kWh)...
+const EVN_TIERS=[
+  {max:50,  p:Math.round(1984*1.08)},  // 2143đ – 50 kWh đầu
+  {max:100, p:Math.round(2050*1.08)},  // 2214đ – 50 kWh tiếp
+  {max:200, p:Math.round(2380*1.08)},  // 2570đ – 100 kWh tiếp
+  {max:300, p:Math.round(2998*1.08)},  // 3238đ – 100 kWh tiếp
+  {max:400, p:Math.round(3350*1.08)},  // 3618đ – 100 kWh tiếp
+  {max:Infinity, p:Math.round(3460*1.08)} // 3737đ – phần còn lại
+];
+
+// FIX LỖI 5: calcBill dùng prev nhất quán (không mix min/max)
+function calcBill(kwh){
+  let bill=0, prev=0, rem=kwh;
+  for(const t of EVN_TIERS){
+    if(rem<=0) break;
+    const bandSize = t.max===Infinity ? rem : t.max - prev; // kWh trong bậc này
+    const used = Math.min(rem, bandSize);
+    bill += used * t.p;
+    rem  -= used;
+    prev  = t.max;
+  }
+  return Math.round(bill);
+}
+function moneyToKwh(money){
+  let m=money, kwh=0, prev=0;
+  for(const t of EVN_TIERS){
+    const bandSize = t.max===Infinity ? 99999 : t.max - prev;
+    const bandCost = bandSize * t.p;
+    if(m<=0) break;
+    if(m >= bandCost){ kwh+=bandSize; m-=bandCost; }
+    else { kwh += m/t.p; m=0; }
+    prev = t.max;
+  }
+  return Math.round(kwh);
+}
+
+// ════════════════════════════════════════════════
+// inverseCalcBill: tìm kWh sao cho calcBill(kWh) ≈ targetBill
+// Dùng binary search (calcBill tăng đơn điệu)
+// ════════════════════════════════════════════════
+function inverseCalcBill(targetBill){
+  if(!targetBill || targetBill <= 0) return 0;
+  if(calcBill(0) >= targetBill) return 0;
+  let lo=0, hi=3000;
+  // Mở rộng hi nếu cần
+  while(calcBill(hi) < targetBill) hi *= 2;
+  for(let i=0; i<60; i++){
+    const mid = (lo+hi)/2;
+    if(calcBill(mid) < targetBill) lo=mid; else hi=mid;
+  }
+  return Math.round((lo+hi)/2);
+}
+
+
+// ════════════════════════════════════════════════
+// TÍNH TIẾT DIỆN CÁP AC TỐI THIỂU
+// Theo 2 tiêu chí: sụt áp ≤ 3% & khả năng mang dòng
+// phase: '1' = 1 pha 220V | '3' = 3 pha 380V
+// ════════════════════════════════════════════════
+function calcACCableSection(inverterKw, totalAcLen, phase){
+  const STD_SIZES=[1.5,2.5,4,6,10,16,25,35,50,70,95,120,150,185,240];
+  // Khả năng mang dòng liên tục (A) cho từng tiết diện — cáp đồng, lắp đặt hở
+  const AMPACITY =[ 18,  26, 35,45, 63, 85,110,138,168,213,258,299,344,392,461];
+  const RHO=0.0175; // điện trở suất đồng (Ω·mm²/m)
+  const PF=0.9;     // hệ số công suất
+
+  let I, AbyDrop;
+  if(String(phase)==='3'){
+    // 3 pha: V=380V, công thức sụt áp √3×L×I×ρ/A ≤ 3%×380
+    I = inverterKw*1000 / (Math.sqrt(3)*380*PF);
+    const dVmax = 0.03*380;
+    AbyDrop = Math.sqrt(3)*totalAcLen*I*RHO / dVmax;
+  } else {
+    // 1 pha: V=220V, công thức sụt áp 2×L×I×ρ/A ≤ 3%×220
+    I = inverterKw*1000 / (220*PF);
+    const dVmax = 0.03*220;
+    AbyDrop = 2*totalAcLen*I*RHO / dVmax;
+  }
+
+  // Chọn tiết diện chuẩn nhỏ nhất thỏa cả hai điều kiện
+  for(let i=0;i<STD_SIZES.length;i++){
+    if(STD_SIZES[i]>=AbyDrop && AMPACITY[i]>=I){
+      return {section:STD_SIZES[i], current:+I.toFixed(1), AbyDrop:+AbyDrop.toFixed(2)};
+    }
+  }
+  return {section:240, current:+I.toFixed(1), AbyDrop:+AbyDrop.toFixed(2)};
+}
+
+function calculate(){
+  try { _savedQuoteNumber = ''; _savedQuoteId = null; } catch(e){}
+  try { calculate_inner(); } catch(err){ alert('LỖI KHI TÍNH TOÁN:\n'+err.message+'\n\nLine: '+(err.stack||'').split('\n')[1]); }
+}
+function calculate_inner(){
+  _savedQuoteNumber = '';
+  _savedQuoteId = null;
+  const badge = document.getElementById('save-status-badge');
+  if(badge) badge.style.display = 'none';
+
+  const rawVal=+document.getElementById('s-kwh').value||0;
+  if(!rawVal){alert('Vui lòng nhập điện tiêu thụ!');return;}
+  const kwh=getRadioVal('elec-input-type')==='kwh'?rawVal:moneyToKwh(rawVal);
+  const cityParts=document.getElementById('s-city').value.split(':');
+  const psh=parseFloat(cityParts[0]), cityName=cityParts[1];
+  const cfg=DB.cfg;
+  const hasBatt=getRadioVal('battery-yn')==='yes';
+  const dayPct=+document.getElementById('s-day-pct').value/100||0.4;
+  const nightPct=1-dayPct;
+
+  // ════════════════════════════════════════════════
+  // BƯỚC 1: PERFORMANCE RATIO (PR) – lấy từ cấu hình
+  // Công thức: kWp = pvDailyNeed × safety / (PSH × PR)
+  // ════════════════════════════════════════════════
+  const pr = (cfg.pr || 80) / 100;   // PR từ cfg (mặc định 80%)
+  const prBase = pr;                  // dùng chung cho pvKwpRaw
+
+  // ════════════════════════════════════════════════
+  // BƯỚC 2: TÍNH CÔNG SUẤT PV SƠ BỘ
+  // kWp = kWh_ngày_cần_bù × hệ_số_an_toàn / (PSH × PR)
+  // ════════════════════════════════════════════════
+  const dailyKwh = kwh/30;
+
+  // On-Grid: bù toàn bộ kWh tháng (PV phát ban ngày, bù offsetting ban ngày)
+  // Hybrid:  bù toàn bộ kWh tháng + nạp pin cho ban đêm
+  // → tính pin trước để biết battUsableKwh
+
+  // ════════════════════════════════════════════════
+  // TÍNH PIN LƯU TRỮ
+  //
+  // Hỗ trợ 2 chế độ:
+  //
+  // [A] Cắt bậc cao (mặc định: cut56, cut6, pct, full)
+  //   → Xác định kWh bậc cao cần cắt
+  //   → Pin lưu trữ phần ban đêm solar không bù được
+  //
+  // [B] Tiền điện mục tiêu (target-mode = 'bill')
+  //   → Tìm kWh còn lại = inverseCalcBill(targetBill)
+  //   → Solar phải bù (kwh - targetGridKwh) kWh/tháng
+  //   → Pin lưu phần ban đêm của lượng bù đó
+  //
+  // Công thức chung:
+  //   battMonthly = coverageKwh × nightPct
+  //   battDaily   = battMonthly / 30
+  //   numModules  = ceil(battDaily / DOD / module_kWh)
+  // ════════════════════════════════════════════════
+  const targetMode = getRadioVal('target-mode') || 'cut56';
+  const targetBillVal = +document.getElementById('s-target-bill').value || 0;
+
+  let numBatts=0, battKwh=0, battIdx=0, battUsableKwh=0;
+  let battTrace={};
+  if(hasBatt && DB.batteries.length){
+    const surveyBattSel=document.getElementById('s-batt-type');
+    battIdx=surveyBattSel&&surveyBattSel.value!==''?+surveyBattSel.value:0;
+    battIdx=Math.min(battIdx,DB.batteries.length-1);
+    const batt=DB.batteries[battIdx];
+    const usablePerMod = batt.kwh * (batt.dod/100);
+
+    let battMonthlyKwh=0;
+    let battMethod='';
+
+    if(targetBillVal > 0){
+      // ── Chế độ B: Mục tiêu tiền điện ──
+      // Tìm kWh lưới còn cần mua để đạt tiền điện mục tiêu
+      const targetGridKwh = inverseCalcBill(targetBillVal);
+      // PV bù hoàn toàn ban ngày → lưới còn lại chỉ là ban đêm
+      // Pin phải bù phần đêm mà lưới không đáp ứng đủ target
+      const nightDemandKwh = kwh * nightPct;
+      battMonthlyKwh = Math.max(0, nightDemandKwh - targetGridKwh);
+      battMethod = `target-bill(${fmtVnd(targetBillVal)})→grid=${targetGridKwh}kWh→pin_cần=${battMonthlyKwh.toFixed(0)}kWh/tháng`;
+      battTrace.targetGridKwh = targetGridKwh;
+      battTrace.nightDemandKwh = +nightDemandKwh.toFixed(1);
+      battTrace.solarCoverage = +(kwh - targetGridKwh).toFixed(1);
+    } else {
+      // ── Chế độ A: Cắt bậc cao ──
+      const tier5start=300;
+      const highTierKwh = kwh > tier5start ? (kwh - tier5start) : 0;
+      battMonthlyKwh = highTierKwh * nightPct;
+      battMethod = 'cut-high-tier(bậc5+6)';
+      battTrace.highTierKwh = +highTierKwh.toFixed(1);
+    }
+
+    const battDailyKwh = battMonthlyKwh / 30;
+    const battRawKwh   = battDailyKwh / (batt.dod/100);
+    numBatts      = Math.max(1, Math.ceil(battRawKwh / batt.kwh));
+    battKwh       = numBatts * batt.kwh;
+    battUsableKwh = numBatts * usablePerMod;
+
+    Object.assign(battTrace, {
+      method: battMethod,
+      kwh, nightPct:+nightPct.toFixed(2),
+      battMonthlyKwh:+battMonthlyKwh.toFixed(1),
+      battDailyKwh:+battDailyKwh.toFixed(2),
+      battDOD:batt.dod, battRawKwh:+battRawKwh.toFixed(2),
+      numBatts, battKwh, battName:batt.name, battModuleKwh:batt.kwh,
+      usablePerMod:+usablePerMod.toFixed(2)
+    });
+  }
+
+  // ---- kWh/ngày PV cần phát ----
+  // On-Grid:  PV chỉ bù ban NGÀY → pvDailyNeed = dailyKwh × dayPct
+  //           (ban đêm vẫn mua EVN, không cần PV sinh thêm)
+  //           Nếu có bán điện dư (net metering) → có thể dùng toàn bộ dayKwh
+  // Hybrid:   PV bù cả ngày + nạp pin cho đêm
+  //           pvDailyNeed = dailyKwh + battUsable / chargeEff
+  const BATT_CHARGE_EFF = 0.95;
+  const hasNetMeter = getRadioVal('net-meter') === 'yes';
+  let pvDailyNeed;
+
+  if(targetBillVal > 0){
+    // ── Chế độ B: PV size chính xác theo mục tiêu tiền điện ──
+    // Lưới linh hoạt → ưu tiên bù ban đêm trước, còn lại bù ban ngày
+    const _tgKwh      = inverseCalcBill(targetBillVal);
+    const _dayDemandM  = kwh * dayPct;
+    const _nightDemandM= kwh * nightPct;
+    const _gridAtNight = Math.min(_tgKwh, _nightDemandM);   // lưới bù đêm tối đa
+    const _gridAtDay   = Math.max(0, _tgKwh - _gridAtNight); // lưới bù ngày (phần còn lại)
+    const _nightBattNeed = Math.max(0, _nightDemandM - _gridAtNight); // pin bù đêm còn thiếu
+    // Solar bù: (nhu cầu ngày − lưới ngày) + nạp pin / net metering
+    const _solarDayNeed = Math.max(0, _dayDemandM - _gridAtDay);
+    let _nightSolarNeed = 0;
+    if(hasBatt)          _nightSolarNeed = _nightBattNeed / BATT_CHARGE_EFF; // nạp pin (có tổn thất)
+    else if(hasNetMeter) _nightSolarNeed = _nightBattNeed; // bán điện dư bù đêm (1:1, không mất mát)
+    // else: không có pin, không net meter → solar chỉ bù ngày, không thể bù đêm
+    pvDailyNeed = Math.max(0, _solarDayNeed + _nightSolarNeed) / 30;
+  } else if(hasBatt){
+    // Hybrid (các chế độ khác): PV bù ngày + sạc đầy pin
+    pvDailyNeed = dailyKwh * dayPct + battUsableKwh / BATT_CHARGE_EFF;
+  } else {
+    // On-Grid: PV chỉ bù ban ngày (không có pin)
+    pvDailyNeed = hasNetMeter ? dailyKwh : dailyKwh * dayPct;
+  }
+  const battDailyCharge = hasBatt ? (battUsableKwh / BATT_CHARGE_EFF) : 0;
+
+  // Chọn panel đầu tiên để có invEff tạm (sẽ cập nhật sau khi chọn inverter)
+  let panelIdx=0;
+  const panel=DB.panels[panelIdx];
+
+  // Trong chế độ "tiền điện mục tiêu", pvDailyNeed đã là nhu cầu chính xác
+  // → không nhân thêm hệ số an toàn (tránh over-size làm tiền điện còn lại thấp hơn mục tiêu)
+  const billMode = (targetBillVal > 0);
+  const safetyFactor = billMode ? 1.0 : (cfg.safety / 100);
+
+  // kWp sơ bộ (dùng prBase × 0.94 tạm)
+  const pvKwpRaw = (pvDailyNeed * safetyFactor) / (psh * prBase * 0.94);
+
+  // ---- Chọn inverter phù hợp ----
+  // Inverter phải đủ lớn hơn CẢ HAI: PV kWp VÀ peak load của khách
+  // Peak load ước tính: tiêu thụ TB × peak factor 1.5 (điện dân dụng)
+  const PEAK_FACTOR = 1.5;
+  const USAGE_HOURS = 8;
+  const peakLoadKw = (dailyKwh / USAGE_HOURS) * PEAK_FACTOR;
+  const minInverterKw = Math.max(pvKwpRaw * 0.9, peakLoadKw);  // PV-AC ratio 0.9 + peak load
+
+  let inverterIdx = hasBatt
+    ? DB.inverters.findIndex(i => i.kw >= minInverterKw && i.name.toLowerCase().includes('hybrid'))
+    : DB.inverters.findIndex(i => i.kw >= minInverterKw && !i.name.toLowerCase().includes('hybrid'));
+  let inverterWarning='';
+  if(inverterIdx<0){
+    const maxInv=DB.inverters.reduce((best,iv)=>iv.kw>best.kw?iv:best,DB.inverters[0]);
+    inverterIdx=DB.inverters.indexOf(maxInv);
+    const numInvNeeded=Math.ceil(minInverterKw/maxInv.kw);
+    inverterWarning=`⚠️ Hệ thống ${pvKwpRaw.toFixed(1)} kWp / peak load ${peakLoadKw.toFixed(1)} kW vượt inverter lớn nhất (${maxInv.kw} kW). Cần ghép ${numInvNeeded} inverter hoặc thêm loại lớn hơn vào DB.`;
+  }
+  const inverter=DB.inverters[inverterIdx];
+  const invEff=(inverter&&inverter.eff?inverter.eff:97)/100;
+  const tempFactor=+(1-(cfg.tempLoss||4)/100).toFixed(3);
+  const soilingFactor=+(1-(cfg.soiling||3)/100).toFixed(3);
+  const shadowVal=+(cfg.shadow||0);
+  const shadowFactor=+(1-shadowVal/100).toFixed(3);
+
+  // ════════════════════════════════════════════════
+  // BƯỚC 3: KWP = pvDailyNeed × safety / (PSH × PR)
+  // (Chế độ tiền điện mục tiêu: safetyFactor=1.0 vì pvDailyNeed đã chính xác)
+  // ════════════════════════════════════════════════
+  const pvKwpCalc = (pvDailyNeed * safetyFactor) / (psh * pr);
+
+  // Số tấm pin
+  let numPanels = Math.ceil(pvKwpCalc * 1000 / panel.watt);
+
+  // ════════════════════════════════════════════════
+  // BƯỚC 4: RÀNG BUỘC DIỆN TÍCH MÁI
+  // ════════════════════════════════════════════════
+  const roofAvail = +document.getElementById('s-roof-area').value||0;
+  let roofWarning='';
+  if(roofAvail>0){
+    const maxPanelsByRoof = Math.floor(roofAvail / panel.area);
+    if(numPanels > maxPanelsByRoof){
+      roofWarning=`⚠️ Mái chỉ đủ ${maxPanelsByRoof} tấm (${roofAvail} m²). Giảm xuống ${maxPanelsByRoof} tấm từ ${numPanels} tấm theo yêu cầu.`;
+      numPanels = maxPanelsByRoof;
+    }
+  }
+
+  const actualKwp  = +(numPanels * panel.watt / 1000).toFixed(2);
+  const roofUsed   = +(numPanels * panel.area).toFixed(1);
+  const annualKwh  = Math.round(actualKwp * psh * 365 * pr);
+
+  // Lưu trace để hiển thị
+  // Kiểm tra over-generation (solar tạo ra > tổng tiêu thụ)
+  const pvMonthlyGen = +(actualKwp * psh * pr * 30).toFixed(0);
+  const overgenWarn = (!hasBatt && !hasNetMeter && pvMonthlyGen > kwh)
+    ? 'Solar tạo ra '+pvMonthlyGen+' kWh > tiêu thụ '+kwh+' kWh — hệ thống có thể dư điện lãng phí.'
+    : (pvMonthlyGen > kwh * 1.05 && !hasNetMeter
+    ? 'Solar tạo ra '+pvMonthlyGen+' kWh > tiêu thụ '+kwh+' kWh — xem xét giảm kWp hoặc bật net metering.'
+    : '');
+  // Tải TB theo giờ (7h-17h = 10h ngày; 18h-5h = 11h đêm)
+  const avgDayLoadKw  = +((dailyKwh * dayPct)  / 10).toFixed(2);  // kW TB ban ngày
+  const avgNightLoadKw= +((dailyKwh * nightPct) / 11).toFixed(2);  // kW TB ban đêm
+
+  const pvTrace = {
+    kwh, dailyKwh:+dailyKwh.toFixed(2),
+    dayPct, nightPct,
+    dayKwhDay:+(dailyKwh*dayPct).toFixed(2),
+    hasBatt, hasNetMeter,
+    battDailyCharge:+battDailyCharge.toFixed(2),
+    pvDailyNeed:+pvDailyNeed.toFixed(2),
+    safetyPct:Math.round(safetyFactor*100),
+    psh, invEff:+(invEff*100).toFixed(0),
+    wireLossPct:cfg.loss, tempFactor, soilingFactor,
+    shadowVal, shadowFactor,
+    pr:+(pr*100).toFixed(1), prBase:+(prBase*100).toFixed(1),
+    pvKwpCalc:+pvKwpCalc.toFixed(2), numPanels, actualKwp,
+    pvMonthlyGen, overgenWarn, avgDayLoadKw, avgNightLoadKw,
+    panelWatt:panel.watt, roofUsed, roofWarning
+  };
+
+  const cableLen=+document.getElementById('s-cable-len').value||50;
+  const distInv=+document.getElementById('s-dist-inv').value||10;
+  const distEvn=+document.getElementById('s-dist-evn').value||5;
+  const phase=getRadioVal('phase-type')||'1';
+  const monthlyGen=Math.round(annualKwh/12);
+  const monthBill=calcBill(kwh);
+
+  // Store partial calcResult first so buildQuoteItems can read it
+  calcResult={kwh,cityName,psh,pr:+(pr*100).toFixed(1),pvKwp:actualKwp,numPanels,panel,inverter,battKwh,numBatts,roofUsed,annualKwh,monthlyGen,costTotal:0,quoteSubtotal:0,vatAmt:0,quoteTotal:0,save1:0,save25:0,payback:0,roi:0,
+    name:document.getElementById('s-name').value||'Khách hàng',
+    address:document.getElementById('s-address').value||'–',
+    phone:document.getElementById('s-phone').value||'–',
+    surveyStaff:document.getElementById('s-staff').value||'',
+    monthBill,hasBatt,panelIdx,inverterIdx,battIdx,cableLen,
+    battHours:+document.getElementById('s-batt-hours').value||6,
+    battLoadPct:+document.getElementById('s-batt-load-pct').value/100||0.6,
+    dayPct, inverterWarning, roofWarning,
+    distInv, distEvn, phase,
+    pvTrace, battTrace};
+
+  quoteItems=buildQuoteItems(panelIdx,inverterIdx,battIdx);
+
+  const nonGroup=quoteItems.filter(i=>!i.isGroup);
+  const costTotal=nonGroup.reduce((s,i)=>s+i.qty*i.costUnit,0);
+  const subTotal=nonGroup.reduce((s,i)=>s+i.qty*i.quoteUnit,0);
+  const vatAmt=Math.round(subTotal*cfg.vat/100);
+  const quoteTotal=subTotal+vatAmt;
+
+  // ── FIX LỖI 7 + 11 + 10: Mô hình tài chính chính xác ──
+  // Lỗi 7:  On-Grid chỉ bù ban ngày; Hybrid bù cả ngày + đêm qua pin
+  // Lỗi 11: Tiết kiệm = calcBill(trước) - calcBill(sau PV) → dùng giá bậc thực tế
+  // Lỗi 10: Trừ chi phí O&M 0.75%/năm trên giá trị hệ thống
+  const dayPct_calc = calcResult.dayPct || 0.4;
+  const OM_RATE = 0.0075; // 0.75%/năm chi phí bảo trì
+
+  // Hàm tính tiết kiệm 1 tháng tại năm y (có lạm phát giá điện)
+  function monthlySavingAtYear(y){
+    const inf        = Math.pow(1 + cfg.elecRise/100, y-1);
+    const pvMonthKwh = (annualKwh / 12) * Math.pow(1 - cfg.degradation/100, y-1);
+    const dayDemand  = kwh * dayPct_calc;
+    const nightDemand= kwh * (1 - dayPct_calc);
+
+    if(hasBatt){
+      // Hybrid: PV phát ban ngày → bù tải ngày → dư nạp pin → pin cấp đêm
+      const dayUse      = Math.min(pvMonthKwh, dayDemand);
+      const excessPV    = Math.max(0, pvMonthKwh - dayDemand);
+      const battObj     = DB.batteries[calcResult.battIdx] || {dod:80};
+      const battUsable  = calcResult.battKwh * (battObj.dod/100) * 30; // kWh/tháng
+      const battDelivery= Math.min(excessPV * 0.95, battUsable);       // pin cấp đêm
+      const gridNight   = Math.max(0, nightDemand - battDelivery);
+      const remainKwh   = (dayDemand - dayUse) + gridNight;
+      const surplus     = Math.max(0, excessPV - battUsable / 0.95);   // dư sau khi đầy pin
+      return (calcBill(kwh) - calcBill(Math.max(0, remainKwh))) * inf
+           + (hasNetMeter ? surplus * (cfg.sellPrice||0) * inf : 0);
+    } else {
+      // On-Grid: PV chỉ phát ban ngày → tối đa bù = nhu cầu ban ngày
+      const pvOffset  = Math.min(pvMonthKwh, dayDemand);
+      const remainKwh = (dayDemand - pvOffset) + nightDemand; // = kwh - pvOffset
+      const surplus   = Math.max(0, pvMonthKwh - dayDemand);  // dư bán điện lưới
+      return (calcBill(kwh) - calcBill(Math.max(0, remainKwh))) * inf
+           + (hasNetMeter ? surplus * (cfg.sellPrice||0) * inf : 0);
+    }
+  }
+
+  let save25 = 0;
+  for(let y=1; y<=25; y++){
+    const annualSaving = monthlySavingAtYear(y) * 12;
+    const omCost = quoteTotal * OM_RATE;   // chi phí bảo trì năm y
+    save25 += annualSaving - omCost;
+  }
+
+  // Tiết kiệm năm 1 (không lạm phát, trừ O&M)
+  const save1 = Math.max(0, Math.round(monthlySavingAtYear(1) * 12 - quoteTotal * OM_RATE));
+  const payback = save1 > 0 ? +(quoteTotal / save1).toFixed(1) : 99;
+  const roi = +(((save25 - quoteTotal) / quoteTotal) * 100).toFixed(1);
+
+  // Tính tiền điện còn phải trả EVN mỗi tháng (năm 1, không lạm phát)
+  const pvMonthY1 = annualKwh / 12;
+  let remainBillMonthly = 0;
+  const dp = dayPct_calc;
+  const ndp = 1 - dp;
+  if(hasBatt){
+    const dayUse1    = Math.min(pvMonthY1, kwh * dp);
+    const excessPV1  = Math.max(0, pvMonthY1 - kwh * dp);
+    const battObj1   = DB.batteries[calcResult.battIdx] || {dod:80};
+    const bUsable1   = calcResult.battKwh * (battObj1.dod/100) * 30;
+    const bDel1      = Math.min(excessPV1 * 0.95, bUsable1);
+    const gridNight1 = Math.max(0, kwh * ndp - bDel1);
+    const remain1    = (kwh * dp - dayUse1) + gridNight1;
+    remainBillMonthly = calcBill(Math.max(0, remain1));
+  } else {
+    const pvOff1   = Math.min(pvMonthY1, kwh * dp);
+    const remain1  = (kwh * dp - pvOff1) + kwh * ndp;
+    remainBillMonthly = calcBill(Math.max(0, remain1));
+  }
+
+  // Update calcResult with financials
+  Object.assign(calcResult,{costTotal,quoteSubtotal:subTotal,vatAmt,quoteTotal,save1,save25:Math.round(save25),payback,roi,remainBillMonthly,elecType:getRadioVal('elec-type')});
+  renderResult();
+  renderDetailTab();
+  switchTab('result');
+}
+
+function renderResult(){
+  const r=calcResult;
+  document.getElementById('r-title').textContent=`${r.pvKwp} kWp${r.battKwh?' + '+r.battKwh+' kWh':''} – ${r.cityName}`;
+  document.getElementById('r-sub').textContent=`${r.name} · ${r.address} · ☎ ${r.phone}`;
+  document.getElementById('kpi-pv').textContent=r.pvKwp;
+  document.getElementById('kpi-panels').textContent=r.numPanels;
+  document.getElementById('kpi-batt').textContent=r.battKwh||'0';
+  document.getElementById('kpi-payback').textContent=r.payback;
+  document.getElementById('f-total').textContent=fmtVnd(r.quoteTotal);
+  document.getElementById('f-save1').textContent=fmtVnd(r.save1)+'/năm';
+  const rbe=document.getElementById('f-remain-bill');
+  if(rbe) rbe.textContent=r.remainBillMonthly!=null?fmtVnd(r.remainBillMonthly)+'/tháng':'–';
+  document.getElementById('f-payback').textContent=r.payback+' năm';
+  document.getElementById('f-save25').textContent=fmtVnd(r.save25);
+  document.getElementById('f-roi').textContent=r.roi+'%';
+  document.getElementById('f-gen').textContent=fmtN(r.annualKwh)+' kWh/năm';
+  document.getElementById('e-kwh').textContent=fmtN(r.kwh)+' kWh/tháng';
+  document.getElementById('e-gen').textContent=fmtN(r.monthlyGen)+' kWh/tháng';
+  document.getElementById('e-psh').textContent=r.psh+' h/ngày';
+  document.getElementById('e-pr').textContent=r.pr+'%';
+  const co2=+(r.annualKwh*0.6/1000).toFixed(2);
+  document.getElementById('e-co2').textContent=co2+' tấn CO₂';
+  document.getElementById('e-trees').textContent=Math.round(co2*50)+' cây/năm';
+
+  const warnings = [];
+  if(r.roofWarning) warnings.push(r.roofWarning);
+  if(r.inverterWarning) warnings.push(r.inverterWarning);
+
+  // Hiển thị warnings
+  let warnEl = document.getElementById('result-warnings');
+  if(!warnEl){
+    warnEl = document.createElement('div');
+    warnEl.id = 'result-warnings';
+    warnEl.style.cssText='margin-bottom:12px';
+    const kpiGrid = document.getElementById('kpi-grid') || document.querySelector('.kpi-grid');
+    if(kpiGrid) kpiGrid.parentNode.insertBefore(warnEl, kpiGrid);
+  }
+  warnEl.innerHTML = warnings.map(w =>
+    `<div style="background:#FFF3EB;border:1px solid #F5C9A0;border-radius:8px;padding:10px 14px;font-size:13px;color:#7A3800;margin-bottom:8px">⚠️ ${w}</div>`
+  ).join('');
+
+  // Populate device dropdowns
+  const selP=document.getElementById('sel-panel');
+  selP.innerHTML=DB.panels.map((p,i)=>`<option value="${i}" ${i===r.panelIdx?'selected':''}>${p.name} – ${p.watt}W</option>`).join('');
+  const selI=document.getElementById('sel-inverter');
+  selI.innerHTML=DB.inverters.map((iv,i)=>`<option value="${i}" ${i===r.inverterIdx?'selected':''}>${iv.name} – ${iv.kw}kW</option>`).join('');
+  const selBG=document.getElementById('sel-battery-group');
+  selBG.style.display=r.hasBatt?'':'none';
+  if(r.hasBatt){
+    const selB=document.getElementById('sel-battery');
+    selB.innerHTML=DB.batteries.map((b,i)=>`<option value="${i}" ${i===r.battIdx?'selected':''}>${b.name} – ${b.kwh}kWh</option>`).join('');
+  }
+
+  renderQuoteTable();
+  renderPaybackChart();
+  updateQuoteFromProfit();
+  renderQuoteDoc();
+}
+
+// _savedQuoteNumber & _savedQuoteId khai báo trong standalone block bên dưới
+
+function genBgNum(){
+  // Nếu đã lưu server → dùng số từ server (chính xác)
+  if(_savedQuoteNumber) return _savedQuoteNumber;
+  // Chưa lưu → hiển thị placeholder
+  const co=DB.company||{};
+  const prefix=co.bgprefix||'NVH';
+  const now=new Date();
+  const dd=String(now.getDate()).padStart(2,'0');
+  const mm=String(now.getMonth()+1).padStart(2,'0');
+  const yy=String(now.getFullYear()).slice(-2);
+  return `${prefix}-${mm}${dd}${yy}`;
+}
+
+function fmtDateVN(d){
+  d=d||new Date();
+  return `Ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`;
+}
+
+function renderQuoteDoc(){
+  const r=calcResult;
+  if(!r.pvKwp) return;
+  const co=DB.company||{};
+  const elecTypeMap={residential_stepped:'Sinh hoạt bậc thang',business:'Kinh doanh',production:'Sản xuất'};
+
+  // Nhân viên khảo sát: ưu tiên nhập từ form khảo sát, fallback về config
+  const staffName = r.surveyStaff || (typeof _authUser!=='undefined' && _authUser
+    ? `${_authUser.name} (${_authUser.code})`
+    : (co.staff || '–'));
+
+  document.getElementById('qd-subtitle').textContent=`Công suất: ${r.pvKwp} kWp${r.battKwh?' | Pin lưu trữ: '+r.battKwh+' kWh':''} | ${r.cityName}`;
+  const dynName = co.companyName||DEFAULT_DB.company.companyName;
+  const elCN = document.getElementById('qd-company-name');
+  if(elCN) elCN.textContent = dynName;
+  const _setEl=(id,val)=>{const e=document.getElementById(id);if(e)e.textContent=val;};
+  _setEl('qd-company-addr',  co.companyAddr ||DEFAULT_DB.company.companyAddr);
+  _setEl('qd-company-tax',   co.companyTax  ||DEFAULT_DB.company.companyTax);
+  _setEl('qd-company-phone', co.companyPhone||DEFAULT_DB.company.companyPhone);
+  _setEl('qd-company-email', co.companyEmail||DEFAULT_DB.company.companyEmail);
+  document.getElementById('qd-bgnum').textContent=genBgNum();
+  document.getElementById('qd-date').textContent=fmtDateVN();
+  document.getElementById('qd-staff').textContent=staffName;
+
+  // Customer
+  document.getElementById('qd-cname').textContent=r.name;
+  document.getElementById('qd-cname-sign').textContent=r.name;
+  document.getElementById('qd-cphone').textContent=r.phone;
+  document.getElementById('qd-caddr').textContent=r.address;
+  document.getElementById('qd-electype').textContent=elecTypeMap[calcResult.elecType]||'Sinh hoạt bậc thang';
+  document.getElementById('qd-kwh').textContent=fmtN(r.kwh)+' kWh/tháng';
+
+  // Specs grid
+  document.getElementById('qd-specs').innerHTML=`
+    <div class="sk">Công suất hệ thống PV</div><div class="sv">${r.pvKwp} kWp</div>
+    <div class="sk">Số lượng tấm pin</div><div class="sv">${r.numPanels} tấm × ${r.panel.watt}W</div>
+    <div class="sk">Loại tấm pin</div><div class="sv">${r.panel.name}</div>
+    <div class="sk">Inverter</div><div class="sv">${r.inverter.name}</div>
+    <div class="sk">Pin lưu trữ</div><div class="sv">${r.battKwh?r.battKwh+' kWh ('+r.numBatts+' module)':'Không có (On-Grid)'}</div>
+    <div class="sk">Giờ nắng đỉnh (PSH)</div><div class="sv">${r.psh} h/ngày</div>
+    <div class="sk">Performance Ratio</div><div class="sv">${r.pr}%</div>
+    <div class="sk">Sản lượng điện năm 1</div><div class="sv">${fmtN(r.annualKwh)} kWh/năm</div>
+    <div class="sk">Diện tích mái chiếm dụng</div><div class="sv">${r.roofUsed} m²</div>
+    <div class="sk">Độ phủ tiêu thụ</div><div class="sv">100%</div>
+  `;
+
+  // Quote table (read-only mirror of editable table)
+  const tbody=document.getElementById('qd-body');
+  tbody.innerHTML='';
+  quoteItems.forEach(item=>{
+    if(item.isGroup){tbody.innerHTML+=`<tr class="qd-group"><td colspan="6">${item.group}</td></tr>`;return;}
+    tbody.innerHTML+=`<tr>
+      <td>${item.stt}</td>
+      <td style="white-space:pre-line;line-height:1.4">${item.name}</td>
+      <td>${item.unit}</td><td>${item.qty}</td>
+      <td style="text-align:right">${fmtVnd(item.quoteUnit)}</td>
+      <td style="text-align:right">${fmtVnd(item.qty*item.quoteUnit)}</td>
+    </tr>`;
+  });
+  const nonGroup=quoteItems.filter(i=>!i.isGroup);
+  const sub=nonGroup.reduce((s,i)=>s+i.qty*i.quoteUnit,0);
+  const vat=Math.round(sub*DB.cfg.vat/100);
+  tbody.innerHTML+=`<tr class="qd-subtotal"><td colspan="5">Tổng cộng (chưa VAT)</td><td>${fmtVnd(sub)}</td></tr>`;
+  tbody.innerHTML+=`<tr class="qd-subtotal"><td colspan="5">Thuế VAT (${DB.cfg.vat}%)</td><td>${fmtVnd(vat)}</td></tr>`;
+  tbody.innerHTML+=`<tr class="qd-total"><td colspan="5">TỔNG CỘNG (GỒM VAT)</td><td>${fmtVnd(sub+vat)}</td></tr>`;
+
+  // Savings summary
+  document.getElementById('qd-savings').innerHTML=`
+    <div class="qd-save-card"><div class="sc-val">${fmtVnd(r.save1)}</div><div class="sc-lbl">Tiết kiệm năm đầu</div></div>
+    <div class="qd-save-card"><div class="sc-val">${r.payback} năm</div><div class="sc-lbl">Thời gian hoàn vốn</div></div>
+    <div class="qd-save-card"><div class="sc-val">${fmtVnd(r.save25)}</div><div class="sc-lbl">Tổng tiết kiệm 25 năm</div></div>
+  `;
+
+  // Terms
+  const terms=(co.terms||DEFAULT_DB.company.terms).replace(/\n/g,'<br>');
+  document.getElementById('qd-terms').innerHTML=terms;
+
+  // Hình ảnh thiết bị cuối báo giá
+  const imgCards = [];
+  const _addImg = (dev, label, spec) => {
+    if(dev && dev.image){
+      imgCards.push(`<div class="qd-img-card">
+        <img src="${dev.image}" alt="${dev.name.split('\n')[0]}">
+        <div class="img-dev-name">${dev.name.split('\n')[0]}</div>
+        <div class="img-dev-spec">${spec}</div>
+      </div>`);
+    }
+  };
+  _addImg(r.panel,   'Tấm Pin',      r.panel   ? (r.panel.watt||'')+'Wp' : '');
+  _addImg(r.inverter,'Inverter',     r.inverter ? (r.inverter.kw||'')+'kW' : '');
+  if(r.hasBatt && DB.batteries[r.battIdx]) _addImg(DB.batteries[r.battIdx],'Pin lưu trữ', DB.batteries[r.battIdx].kwh+'kWh');
+  const imgSec = document.getElementById('qd-device-imgs');
+  const imgGrid = document.getElementById('qd-img-grid');
+  if(imgSec && imgGrid){
+    if(imgCards.length > 0){
+      imgGrid.innerHTML = imgCards.join('');
+      imgSec.style.display = 'block';
+    } else {
+      imgSec.style.display = 'none';
+    }
+  }
+}
+
+function buildQuoteItems(panelIdx, inverterIdx, battIdx){
+  // Rebuild quote items from DB using chosen device indices
+  const r=calcResult;
+  const panel=DB.panels[panelIdx];
+  const inverter=DB.inverters[inverterIdx];
+  const profitPct=+document.getElementById('profit-pct').value||15;
+
+  // Recalc panel count for newly chosen panel
+  // QUAN TRỌNG: Dùng pvKwpCalc từ calculate_inner() — đã tính đúng theo bill mode
+  // KHÔNG tính lại từ đầu vì sẽ bỏ qua "Tiền điện mục tiêu" và hệ số an toàn đặc biệt
+  const pvKwpNeeded = (r.pvTrace && r.pvTrace.pvKwpCalc)
+    ? r.pvTrace.pvKwpCalc
+    : (r.kwh/30*(DB.cfg.safety/100))/(r.psh*(r.pr/100));
+  const numPanels=Math.ceil(pvKwpNeeded*1000/panel.watt);
+  const actualKwp=+(numPanels*panel.watt/1000).toFixed(2);
+  const cableLen=r.cableLen||50;
+
+  // Recalc battery for new selection — dùng battMonthlyKwh từ calculate_inner()
+  let numBatts=r.numBatts, battKwh=r.battKwh;
+  if(r.hasBatt&&DB.batteries.length){
+    const batt=DB.batteries[battIdx];
+    const usablePerModule=batt.kwh*batt.dod/100;
+    // Lấy kWh/tháng đã tính đúng từ calculate_inner() (tránh tính lại sai)
+    const battMonthlyKwh = (r.battTrace && r.battTrace.battMonthlyKwh != null)
+      ? r.battTrace.battMonthlyKwh
+      : (r.kwh*(1-(r.dayPct||0.4))*0.5);
+    const battDailyKwh = battMonthlyKwh / 30;
+    const battRawKwh = battDailyKwh / (batt.dod/100);
+    numBatts=Math.max(1,Math.ceil(battRawKwh/batt.kwh));
+    battKwh=numBatts*batt.kwh;
+  }
+
+  // Update calcResult with new device choices
+  calcResult.panel=panel; calcResult.inverter=inverter;
+  calcResult.numPanels=numPanels; calcResult.pvKwp=actualKwp;
+  calcResult.battKwh=battKwh; calcResult.numBatts=numBatts;
+  calcResult.panelIdx=panelIdx; calcResult.inverterIdx=inverterIdx; calcResult.battIdx=battIdx;
+  document.getElementById('kpi-pv').textContent=actualKwp;
+  document.getElementById('kpi-panels').textContent=numPanels;
+  document.getElementById('kpi-batt').textContent=battKwh||'0';
+
+  const items=[];
+  items.push({group:'I. TẤM PIN NĂNG LƯỢNG MẶT TRỜI',isGroup:true});
+  // Smart display: nếu name đã chứa thông số chi tiết (multiline) thì hiện nguyên
+  // nếu name đơn giản thì tự ghép thông số từ các field
+  function buildSpecStr(dev, extra){
+    var isDetailed=dev.name&&dev.name.indexOf('\n')>=0;
+    var parts=[dev.name.trim()];
+    if(dev.desc){
+      var descClean=dev.desc.trim();
+      // Chỉ thêm desc nếu khác với name (không trùng lặp)
+      if(descClean&&descClean!==dev.name.trim()&&dev.name.trim().indexOf(descClean.substring(0,30))<0){
+        parts.push(descClean);
+      }
+    }
+    if(!isDetailed){
+      if(extra) extra.forEach(function(s){if(s)parts.push(s);});
+    }
+    if(dev.brand) parts.push('Hãng sản xuất: '+dev.brand.trim());
+    if(dev.note) parts.push('Ghi chú: '+dev.note.trim());
+    return parts.filter(Boolean).join('\n');
+  }
+  const panelSpecs=buildSpecStr(panel,[
+    panel.watt?'Công suất: '+panel.watt+' Wp':'',
+    panel.area?'Diện tích: '+panel.area+' m²/tấm':'',
+    'Bảo hành hiệu suất: 25 năm | Bảo hành vật lý: 12 năm'
+  ]);
+  items.push({stt:'1',name:panelSpecs,unit:'Tấm',qty:numPanels,costUnit:panel.cost,quoteUnit:Math.round(panel.cost*(1+profitPct/100)),id:'panel-0'});
+  items.push({group:'II. BIẾN TẦN & PIN LƯU TRỮ',isGroup:true});
+  const invType=inverter.type||(inverter.name.toLowerCase().includes('hybrid')?'Hybrid':'On-Grid');
+  const invSpecs=buildSpecStr(inverter,[
+    inverter.kw?'Công suất: '+inverter.kw+' kW':'',
+    inverter.eff?'Hiệu suất: '+inverter.eff+'%':'',
+    'Loại: '+invType,
+    'Bảo hành: 5 năm theo hãng sản xuất'
+  ]);
+  items.push({stt:'1',name:invSpecs,unit:'Bộ',qty:1,costUnit:inverter.cost,quoteUnit:Math.round(inverter.cost*(1+profitPct/100)),id:'inv-0'});
+  if(r.hasBatt&&DB.batteries.length){
+    const batt=DB.batteries[battIdx];
+    const battType=batt.type||'LFP LiFePO4';
+    const battSpecs=buildSpecStr(batt,[
+      batt.kwh?'Dung lượng: '+batt.kwh+' kWh/module':'',
+      batt.dod?'DOD (độ xả sâu): '+batt.dod+'%':'',
+      'Loại: '+battType,
+      'Bảo hành: 5 năm hoặc 6.000 chu kỳ sạc'
+    ]);
+    items.push({stt:'2',name:battSpecs,unit:'Module',qty:numBatts,costUnit:batt.cost,quoteUnit:Math.round(batt.cost*(1+profitPct/100)),id:'batt-0'});
+  }
+  items.push({group:'III. VẬT TƯ & NHÂN CÔNG',isGroup:true});
+  const evalQty=(f)=>{try{return Math.ceil(eval(f.replace(/panels/g,numPanels).replace(/cable/g,cableLen).replace(/kwp/g,actualKwp)));}catch{return 1;}};
+  // Làm tròn lên số CHẴN gần nhất (kẹp biên, kẹp giữa, mini rail, pat Z dùng 2/tấm)
+  const evalQtyEven=(f)=>{const q=evalQty(f);return q%2===0?q:q+1;};
+  const EVEN_QTY_KEYWORDS=['kẹp biên','kẹp giữa','mini rail','minirail','pat z','pat-z'];
+  const needsEven=(name)=>EVEN_QTY_KEYWORDS.some(k=>name.toLowerCase().includes(k));
+  // Tính tiết diện cáp AC tối thiểu từ công suất inverter + tổng chiều dài AC
+  const _acLen = (r.distInv||10) + (r.distEvn||5);
+  const _acPhase = r.phase||'1';
+  const _invKw = (r.inverter && r.inverter.kw) ? r.inverter.kw : (r.pvKwp||6);
+  const _acSpec = calcACCableSection(_invKw, _acLen, _acPhase);
+  // 1 pha: 2 lõi (pha + N) | 3 pha: 4 lõi (3 pha + N)
+  const _acCores = _acPhase==='3' ? '4' : '2';
+  const _acPhaseLabel = _acPhase==='3' ? '3 pha 380V' : '1 pha 220V';
+  const _acLabel = `Cáp AC ${_acCores}×${_acSpec.section}mm² (${_acPhaseLabel})`;
+  const _acNote  = `Inverter ${_invKw}kW ${_acPhaseLabel} | Tuyến AC: ${_acLen}m | Dòng/pha: ${_acSpec.current}A | Tiết diện tối thiểu: ${_acSpec.AbyDrop}mm² → Chọn: ${_acSpec.section}mm²`;
+
+  DB.materials.forEach((m,i)=>{
+    // Cáp AC: tự động bổ sung tiết diện tính toán vào tên
+    const isACcable = m.name.toLowerCase().includes('cáp ac') || m.name.toLowerCase().includes('cap ac');
+    const displayName = isACcable ? _acLabel + '\n' + _acNote : m.name;
+    if(m.cost_formula){
+      const c=Math.round(eval(m.cost_formula.replace(/kwp/g,actualKwp).replace(/panels/g,numPanels)));
+      items.push({stt:String(i+1),name:displayName,unit:m.unit,qty:1,costUnit:c,quoteUnit:Math.round(c*(1+profitPct/100)),id:'mat-'+i});
+    } else {
+      const qty=needsEven(m.name)?evalQtyEven(m.qty_formula):evalQty(m.qty_formula);
+      items.push({stt:String(i+1),name:displayName,unit:m.unit,qty,costUnit:m.cost,quoteUnit:Math.round(m.cost*(1+profitPct/100)),id:'mat-'+i});
+    }
+  });
+  return items;
+}
+
+function onDeviceChange(){
+  if(!calcResult.pvKwp) return;
+  const pIdx=+document.getElementById('sel-panel').value;
+  const iIdx=+document.getElementById('sel-inverter').value;
+  const bIdx=calcResult.hasBatt ? +document.getElementById('sel-battery').value : 0;
+
+  // Rebuild quote items với thiết bị mới (numBatts tự recalc bên trong)
+  quoteItems=buildQuoteItems(pIdx,iIdx,bIdx);
+  renderQuoteTable();
+  recalcTotals();
+
+  // Cập nhật KPI + tài chính + báo giá in
+  const r=calcResult;
+  document.getElementById('r-title').textContent=`${r.pvKwp} kWp${r.battKwh?' + '+r.battKwh+' kWh':''} – ${r.cityName}`;
+  document.getElementById('kpi-pv').textContent=r.pvKwp;
+  document.getElementById('kpi-panels').textContent=r.numPanels;
+  document.getElementById('kpi-batt').textContent=r.battKwh||'0';
+
+  // Cập nhật tài chính với battKwh mới
+  recalcFinancials();
+
+  // Cập nhật báo giá in (renderQuoteDoc) để phản ánh loại/số lượng batt mới
+  renderQuoteDoc();
+}
+
+// Tách riêng hàm recalc tài chính để gọi lại khi thay đổi thiết bị
+function recalcFinancials(){
+  const r=calcResult;
+  const cfg=DB.cfg;
+  const dayPct_calc=r.dayPct||0.4;
+  const OM_RATE=0.0075;
+  const annualKwh=r.annualKwh;
+  const kwh=r.kwh;
+  const hasBatt=r.hasBatt;
+  const hasNetMeter=getRadioVal('net-meter')==='yes';
+
+  function monthlySavingAtYear(y){
+    const inf        =Math.pow(1+cfg.elecRise/100,y-1);
+    const pvMonthKwh =(annualKwh/12)*Math.pow(1-cfg.degradation/100,y-1);
+    const dayDemand  =kwh*dayPct_calc;
+    const nightDemand=kwh*(1-dayPct_calc);
+    if(hasBatt){
+      const dayUse      =Math.min(pvMonthKwh,dayDemand);
+      const excessPV    =Math.max(0,pvMonthKwh-dayDemand);
+      const battObj     =DB.batteries[r.battIdx]||{dod:80};
+      const battUsable  =r.battKwh*(battObj.dod/100)*30;
+      const battDelivery=Math.min(excessPV*0.95,battUsable);
+      const gridNight   =Math.max(0,nightDemand-battDelivery);
+      const remainKwh   =(dayDemand-dayUse)+gridNight;
+      const surplus     =Math.max(0,excessPV-battUsable/0.95);
+      return (calcBill(kwh)-calcBill(Math.max(0,remainKwh)))*inf
+            +(hasNetMeter?surplus*(cfg.sellPrice||0)*inf:0);
+    } else {
+      const pvOffset  =Math.min(pvMonthKwh,dayDemand);
+      const remainKwh =(dayDemand-pvOffset)+nightDemand;
+      const surplus   =Math.max(0,pvMonthKwh-dayDemand);
+      return (calcBill(kwh)-calcBill(Math.max(0,remainKwh)))*inf
+            +(hasNetMeter?surplus*(cfg.sellPrice||0)*inf:0);
+    }
+  }
+
+  let save25=0;
+  for(let y=1;y<=25;y++) save25+=monthlySavingAtYear(y)*12-r.quoteTotal*OM_RATE;
+  const save1=Math.max(0,Math.round(monthlySavingAtYear(1)*12-r.quoteTotal*OM_RATE));
+  const payback=save1>0?+(r.quoteTotal/save1).toFixed(1):99;
+  const roi=+(((save25-r.quoteTotal)/r.quoteTotal)*100).toFixed(1);
+
+  calcResult.save1=save1; calcResult.save25=Math.round(save25);
+  calcResult.payback=payback; calcResult.roi=roi;
+
+  document.getElementById('f-save1').textContent=fmtVnd(save1)+'/năm';
+  document.getElementById('f-payback').textContent=payback+' năm';
+  document.getElementById('f-save25').textContent=fmtVnd(Math.round(save25));
+  document.getElementById('f-roi').textContent=roi+'%';
+  document.getElementById('kpi-payback').textContent=payback;
+  renderPaybackChart();
+}
+
+function renderQuoteTable(){
+  const tbody=document.getElementById('quote-body');
+  tbody.innerHTML='';
+  quoteItems.forEach(item=>{
+    if(item.isGroup){tbody.innerHTML+=`<tr class="group-row"><td colspan="6">${item.group}</td></tr>`;return;}
+    const total=item.qty*item.quoteUnit;
+    tbody.innerHTML+=`<tr>
+      <td>${item.stt}</td>
+      <td style="white-space:pre-line;line-height:1.4">${item.name}</td>
+      <td>${item.unit}</td>
+      <td><input class="editable-cell" style="width:55px" type="number" value="${item.qty}" onchange="updateItemQty('${item.id}',this.value)"></td>
+      <td><input class="editable-cell" style="width:110px" type="number" value="${item.quoteUnit}" onchange="updateItemPrice('${item.id}',this.value)"></td>
+      <td id="total-${item.id}">${fmtVnd(total)}</td>
+    </tr>`;
+  });
+  appendTotalsRows();
+}
+
+function appendTotalsRows(){
+  const tbody=document.getElementById('quote-body');
+  const nonGroup=quoteItems.filter(i=>!i.isGroup);
+  const sub=nonGroup.reduce((s,i)=>s+i.qty*i.quoteUnit,0);
+  const vat=Math.round(sub*DB.cfg.vat/100);
+  const tot=sub+vat;
+  // remove old total rows first
+  document.querySelectorAll('#quote-body .subtotal-row,#quote-body .total-row').forEach(r=>r.remove());
+  tbody.innerHTML+=`<tr class="subtotal-row"><td colspan="5">Tổng cộng (chưa VAT)</td><td id="subtotal-val">${fmtVnd(sub)}</td></tr>`;
+  tbody.innerHTML+=`<tr class="subtotal-row"><td colspan="5">Thuế VAT (${DB.cfg.vat}%)</td><td id="vat-val">${fmtVnd(vat)}</td></tr>`;
+  tbody.innerHTML+=`<tr class="total-row"><td colspan="5">TỔNG CỘNG (GỒM VAT)</td><td id="grandtotal-val">${fmtVnd(tot)}</td></tr>`;
+  calcResult.costTotal=nonGroup.reduce((s,i)=>s+i.qty*i.costUnit,0);
+  calcResult.quoteTotal=tot;
+  return {sub,vat,tot};
+}
+
+function updateItemQty(id,val){
+  const i=quoteItems.find(x=>x.id===id);
+  if(!i) return;
+  i.qty=+val;
+
+  // Khi thay đổi số lượng tấm PV → tính lại toàn bộ sản lượng & tiền điện
+  if(id==='panel-0' && calcResult.panel){
+    const newN  = Math.max(1,+val);
+    const panel = calcResult.panel;
+    const newKwp= +(newN * panel.watt / 1000).toFixed(2);
+    const psh   = calcResult.psh;
+    const pr    = calcResult.pr / 100;
+    const newAnnual  = Math.round(newKwp * psh * 365 * pr);
+    const newMonthly = Math.round(newAnnual / 12);
+
+    calcResult.numPanels  = newN;
+    calcResult.pvKwp      = newKwp;
+    calcResult.annualKwh  = newAnnual;
+    calcResult.monthlyGen = newMonthly;
+
+    // Cập nhật số lượng vật tư phụ có công thức liên quan đến panels/kwp
+    const cableLen = calcResult.cableLen || 10;
+    quoteItems.forEach(item=>{
+      if(!item.id || !item.id.startsWith('mat-')) return;
+      const matIdx = parseInt(item.id.split('-')[1]);
+      const mat = DB.materials[matIdx];
+      if(!mat) return;
+      if(mat.qty_formula && (mat.qty_formula.includes('panels')||mat.qty_formula.includes('kwp'))){
+        try{
+          const _q=Math.ceil(eval(mat.qty_formula.replace(/panels/g,newN).replace(/cable/g,cableLen).replace(/kwp/g,newKwp)));
+          const _even=EVEN_QTY_KEYWORDS.some(k=>mat.name.toLowerCase().includes(k));
+          item.qty=(_even&&_q%2!==0)?_q+1:_q;
+        }catch(e){}
+      }
+      if(mat.cost_formula && (mat.cost_formula.includes('kwp')||mat.cost_formula.includes('panels'))){
+        try{
+          const newCost=Math.round(eval(mat.cost_formula.replace(/kwp/g,newKwp).replace(/panels/g,newN)));
+          item.costUnit=newCost;
+          const profitPct=+document.getElementById('profit-pct').value||15;
+          item.quoteUnit=Math.round(newCost*(1+profitPct/100));
+        }catch(e){}
+      }
+    });
+
+    // Tính lại tiền điện còn trả EVN
+    const kwh    = calcResult.kwh;
+    const dp     = calcResult.dayPct||0.4;
+    const ndp    = 1-dp;
+    const hasBatt= calcResult.hasBatt;
+    let remainBill=0;
+    if(hasBatt){
+      const dayUse1   =Math.min(newMonthly,kwh*dp);
+      const excessPV1 =Math.max(0,newMonthly-kwh*dp);
+      const battObj1  =DB.batteries[calcResult.battIdx]||{dod:80};
+      const bUsable1  =calcResult.battKwh*(battObj1.dod/100)*30;
+      const bDel1     =Math.min(excessPV1*0.95,bUsable1);
+      const gridNight1=Math.max(0,kwh*ndp-bDel1);
+      const remain1   =(kwh*dp-dayUse1)+gridNight1;
+      remainBill=calcBill(Math.max(0,remain1));
+    } else {
+      const pvOff1 =Math.min(newMonthly,kwh*dp);
+      const remain1=(kwh*dp-pvOff1)+kwh*ndp;
+      remainBill=calcBill(Math.max(0,remain1));
+    }
+    calcResult.remainBillMonthly=remainBill;
+
+    // Cập nhật hiển thị KPI & tài chính
+    const el=(id)=>document.getElementById(id);
+    el('kpi-pv').textContent    = newKwp;
+    el('kpi-panels').textContent= newN;
+    if(el('f-gen'))  el('f-gen').textContent = fmtN(newAnnual)+' kWh/năm';
+    if(el('e-gen'))  el('e-gen').textContent = fmtN(newMonthly)+' kWh/tháng';
+    const rbe=el('f-remain-bill');
+    if(rbe) rbe.textContent=fmtVnd(remainBill)+'/tháng';
+
+    // Cập nhật title result
+    const rTitle=el('r-title');
+    if(rTitle) rTitle.textContent=`${newKwp} kWp${calcResult.battKwh?' + '+calcResult.battKwh+' kWh':''} – ${calcResult.cityName}`;
+
+    renderQuoteTable();  // re-render bảng để hiển thị qty vật tư đã cập nhật
+    renderQuoteDoc();
+  }
+
+  recalcTotals();
+}
+function updateItemPrice(id,val){const i=quoteItems.find(x=>x.id===id);if(i){i.quoteUnit=+val;recalcTotals();}}
+
+function recalcTotals(){
+  // Update per-row totals
+  quoteItems.forEach(item=>{
+    if(!item.isGroup){
+      const el=document.getElementById('total-'+item.id);
+      if(el)el.textContent=fmtVnd(item.qty*item.quoteUnit);
+    }
+  });
+  const nonGroup=quoteItems.filter(i=>!i.isGroup);
+  const sub=nonGroup.reduce((s,i)=>s+i.qty*i.quoteUnit,0);
+  const vat=Math.round(sub*DB.cfg.vat/100);
+  const tot=sub+vat;
+  // Update footer rows
+  const sv=document.getElementById('subtotal-val');
+  const vv=document.getElementById('vat-val');
+  const gv=document.getElementById('grandtotal-val');
+  if(sv)sv.textContent=fmtVnd(sub);
+  if(vv)vv.textContent=fmtVnd(vat);
+  if(gv)gv.textContent=fmtVnd(tot);
+  calcResult.costTotal=nonGroup.reduce((s,i)=>s+i.qty*i.costUnit,0);
+  calcResult.quoteTotal=tot;
+  document.getElementById('quote-total-display').textContent=fmtVnd(tot);
+  document.getElementById('cost-total-display').textContent=fmtVnd(calcResult.costTotal);
+  calcResult.quoteTotal=tot;
+  recalcFinancials();
+  if(calcResult.pvKwp) renderQuoteDoc();
+}
+
+function updateQuoteFromProfit(){
+  if(!quoteItems.length)return;
+  const profitPct=+document.getElementById('profit-pct').value||15;
+  // Reapply profit to all items (reset manual overrides)
+  quoteItems.forEach(i=>{if(!i.isGroup) i.quoteUnit=Math.round(i.costUnit*(1+profitPct/100));});
+  renderQuoteTable();
+  recalcTotals();
+}
+
+// ══════════════════════════════════════════════════
+// TAB CHI TIẾT TÍNH TOÁN
+// ══════════════════════════════════════════════════
+function renderDetailTab(){
+  const placeholder=document.getElementById('detail-placeholder');
+  const content=document.getElementById('detail-content');
+  if(!calcResult||!calcResult.pvKwp){
+    if(placeholder) placeholder.style.display='block';
+    if(content) content.style.display='none';
+    return;
+  }
+  if(placeholder) placeholder.style.display='none';
+  if(!content) return;
+  content.style.display='block';
+
+  const r=calcResult;
+  const t=r.pvTrace||{};
+  const b=r.battTrace||{};
+  const cfg=DB.cfg;
+  const kwh=r.kwh;
+  const dp=r.dayPct||0.4;
+  const ndp=1-dp;
+
+  // ── 1. Bảng bậc thang EVN ──
+  let tierRows='';
+  let prev=0,rem=kwh;
+  const tierLabels=['Bậc 1 (0–50)','Bậc 2 (51–100)','Bậc 3 (101–200)','Bậc 4 (201–300)','Bậc 5 (301–400)','Bậc 6 (>400)'];
+  EVN_TIERS.forEach((tier,i)=>{
+    if(rem<=0){tierRows+=`<tr><td>${tierLabels[i]}</td><td style="text-align:right">0</td><td style="text-align:right">${fmtN(tier.p)}</td><td style="text-align:right">0</td></tr>`;return;}
+    const band=tier.max===Infinity?rem:tier.max-prev;
+    const used=Math.min(rem,band);
+    const cost=Math.round(used*tier.p);
+    const active=used>0;
+    tierRows+=`<tr style="${active?'':'opacity:.35'}">
+      <td>${tierLabels[i]}</td>
+      <td style="text-align:right">${active?fmtN(Math.round(used)):0} kWh</td>
+      <td style="text-align:right">${fmtN(tier.p)} đ</td>
+      <td style="text-align:right;font-weight:${used>0?'600':'400'}">${fmtVnd(cost)}</td>
+    </tr>`;
+    rem-=used; prev=tier.max;
+  });
+
+  // ── 2. Tiền điện còn trả sau lắp ──
+  const pvM=r.monthlyGen;
+  let remKwhAfter=0;
+  if(r.hasBatt){
+    const dayUse=Math.min(pvM,kwh*dp);
+    const exc=Math.max(0,pvM-kwh*dp);
+    const battObj=DB.batteries[r.battIdx]||{dod:80};
+    const bUsable=r.battKwh*(battObj.dod/100)*30;
+    const bDel=Math.min(exc*0.95,bUsable);
+    const gridNight=Math.max(0,kwh*ndp-bDel);
+    remKwhAfter=(kwh*dp-dayUse)+gridNight;
+  } else {
+    const pvOff=Math.min(pvM,kwh*dp);
+    remKwhAfter=(kwh*dp-pvOff)+kwh*ndp;
+  }
+  remKwhAfter=Math.max(0,remKwhAfter);
+
+  // ── 3. Sản lượng 5 năm ──
+  let genRows='';
+  [1,2,3,5,10,15,20,25].forEach(y=>{
+    const gen=Math.round(r.annualKwh*Math.pow(1-cfg.degradation/100,y-1));
+    genRows+=`<tr><td>Năm ${y}</td><td style="text-align:right">${fmtN(gen)} kWh/năm</td><td style="text-align:right">${fmtN(Math.round(gen/12))} kWh/tháng</td></tr>`;
+  });
+
+  // ── 4. Bảng tính PV ──
+  const prSteps=[
+    ['Hiệu suất inverter',`${t.invEff||0}%`],
+    ['Tổn thất dây dẫn',`${t.wireLossPct||0}%`],
+    ['Hệ số nhiệt độ',`×${t.tempFactor||1}`],
+    ['Hệ số bụi / bẩn',`×${t.soilingFactor||1}`],
+    ['Bóng che',`×${t.shadowFactor||1}`],
+    ['PR thực tế',`<strong>${t.pr||r.pr}%</strong>`],
+  ];
+
+  content.innerHTML=`
+  <!-- SECTION 1: TIÊU THỤ & BẬC THANG -->
+  <div class="card">
+    <div class="card-title">⚡ Tiêu Thụ Điện & Bảng Bậc Thang EVN</div>
+    <div class="form-grid cols-3" style="margin-bottom:14px">
+      <div class="stat-mini"><span class="stat-lbl">Tiêu thụ / tháng</span><span class="stat-val">${fmtN(kwh)} kWh</span></div>
+      <div class="stat-mini"><span class="stat-lbl">Tiền điện gốc</span><span class="stat-val" style="color:var(--orange)">${fmtVnd(r.monthBill)}/tháng</span></div>
+      <div class="stat-mini"><span class="stat-lbl">Đơn giá trung bình</span><span class="stat-val">${kwh?fmtN(Math.round(r.monthBill/kwh)):0} đ/kWh</span></div>
+    </div>
+    <div style="background:#f8f9fa;border-radius:8px;padding:12px 14px;font-size:13px;margin-top:10px">
+      <div style="font-weight:600;margin-bottom:8px;color:var(--navy)">Phân tích tải theo giờ (30 ngày × tỷ lệ ngày/đêm)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div style="color:var(--gray-text);margin-bottom:4px">☀️ Ban ngày (7h–17h, 10h/ngày)</div>
+          <div>• Tiêu thụ: <strong>${fmtN(Math.round(kwh*dp))} kWh/tháng</strong> = ${+(kwh*dp/30).toFixed(1)} kWh/ngày</div>
+          <div>• Tải TB: <strong>${t.avgDayLoadKw||+(kwh*dp/30/10).toFixed(2)} kW</strong></div>
+          <div style="color:var(--teal);margin-top:4px">→ Solar phủ ${fmtN(Math.round(Math.min(r.monthlyGen,kwh*dp)))} kWh/tháng</div>
+        </div>
+        <div>
+          <div style="color:var(--gray-text);margin-bottom:4px">🌙 Ban đêm (18h–5h, 11h/ngày)</div>
+          <div>• Tiêu thụ: <strong>${fmtN(Math.round(kwh*ndp))} kWh/tháng</strong> = ${+(kwh*ndp/30).toFixed(1)} kWh/ngày</div>
+          <div>• Tải TB: <strong>${t.avgNightLoadKw||+(kwh*ndp/30/11).toFixed(2)} kW</strong></div>
+          <div style="color:${r.hasBatt?'var(--teal)':'var(--gray-text)'};margin-top:4px">→ ${r.hasBatt?'Pin lưu trữ bù '+fmtN(r.battKwh)+' kWh/ngày':'Mua EVN toàn bộ'}</div>
+        </div>
+      </div>
+      ${t.overgenWarn?`<div style="margin-top:10px;padding:8px 12px;background:#FFF3CD;border-radius:6px;color:#856404;font-size:12px">⚠️ ${t.overgenWarn}</div>`:''}
+    </div>
+    <div style="display:none">
+    </div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="background:var(--navy);color:white">
+        <th style="padding:8px 11px;text-align:left;font-weight:500">Bậc thang</th>
+        <th style="padding:8px 11px;text-align:right;font-weight:500">Số kWh</th>
+        <th style="padding:8px 11px;text-align:right;font-weight:500">Đơn giá</th>
+        <th style="padding:8px 11px;text-align:right;font-weight:500">Thành tiền</th>
+      </tr></thead>
+      <tbody>${tierRows}</tbody>
+      <tfoot><tr style="background:var(--navy);color:white;font-weight:700">
+        <td colspan="3" style="padding:8px 11px">Tổng tiền điện (có VAT 8%)</td>
+        <td style="padding:8px 11px;text-align:right">${fmtVnd(r.monthBill)}</td>
+      </tr></tfoot>
+    </table>
+  </div>
+
+  <!-- SECTION 2: TÍNH TOÁN CÔNG SUẤT PV -->
+  <div class="card">
+    <div class="card-title">☀️ Tính Toán Công Suất PV</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div>
+        <div style="font-size:12px;color:var(--gray-text);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Nhu cầu điện ban ngày</div>
+        <table style="width:100%;font-size:13px;border-collapse:collapse">
+          <tr><td style="padding:5px 0;color:var(--gray-text)">Tiêu thụ/tháng</td><td style="text-align:right;font-weight:600">${fmtN(kwh)} kWh → ${fmtN(t.dailyKwh||+(kwh/30).toFixed(1))} kWh/ngày</td></tr>
+          <tr><td style="padding:5px 0;color:var(--gray-text)">Tỷ lệ ban ngày</td><td style="text-align:right;font-weight:600">${Math.round(dp*100)}%</td></tr>
+          <tr><td style="padding:5px 0;color:var(--gray-text)">Nhu cầu ban ngày</td><td style="text-align:right;font-weight:600">${t.dayKwhDay||+(t.dailyKwh*dp).toFixed(2)} kWh/ngày</td></tr>
+          ${r.hasBatt?`<tr><td style="padding:5px 0;color:var(--gray-text)">Nhu cầu nạp pin</td><td style="text-align:right;font-weight:600">${t.battDailyCharge||0} kWh/ngày</td></tr>`:''}
+          <tr style="border-top:2px solid var(--gray-border)"><td style="padding:6px 0;font-weight:700">Tổng nhu cầu PV</td><td style="text-align:right;font-weight:700;color:var(--orange)">${t.pvDailyNeed||0} kWh/ngày</td></tr>
+        </table>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--gray-text);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Hệ số hiệu suất (PR)</div>
+        <table style="width:100%;font-size:13px;border-collapse:collapse">
+          ${prSteps.map(([k,v])=>`<tr><td style="padding:4px 0;color:var(--gray-text)">${k}</td><td style="text-align:right">${v}</td></tr>`).join('')}
+          <tr><td style="padding:4px 0;color:var(--gray-text)">Số giờ nắng (PSH)</td><td style="text-align:right;font-weight:600">${r.psh} h/ngày</td></tr>
+          <tr><td style="padding:4px 0;color:var(--gray-text)">Hệ số an toàn</td><td style="text-align:right;font-weight:600">${t.safetyPct||cfg.safety}%</td></tr>
+        </table>
+      </div>
+    </div>
+    <div style="background:var(--orange-light);border-radius:8px;padding:12px 16px;font-size:13px">
+      <div style="margin-bottom:6px">
+        <strong>Công thức:</strong> kWp = (Nhu cầu PV × Hệ số an toàn) ÷ (PSH × PR)
+      </div>
+      <div style="font-family:monospace;font-size:13px;color:var(--navy)">
+        = (${t.pvDailyNeed||0} × ${t.safetyPct||cfg.safety}%) ÷ (${r.psh} × ${t.pr||r.pr}%) = <strong>${t.pvKwpCalc||r.pvKwp} kWp</strong>
+      </div>
+      <div style="margin-top:8px;border-top:1px solid #F5C9A0;padding-top:8px">
+        Làm tròn lên: ${t.pvKwpCalc||r.pvKwp} kWp ÷ ${t.panelWatt||r.panel.watt}W = ${t.numPanels||r.numPanels} tấm
+        → <strong style="color:var(--orange)">${r.pvKwp} kWp thực tế</strong>
+        ${t.roofWarning?`<br><span style="color:#A32D2D">${t.roofWarning}</span>`:''}
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: PIN LƯU TRỮ (nếu có) -->
+  ${r.hasBatt?`
+  <div class="card">
+    <div class="card-title">🔋 Tính Toán Pin Lưu Trữ</div>
+    <table style="width:100%;font-size:13px;border-collapse:collapse">
+      <tr><td style="padding:6px 0;color:var(--gray-text);width:55%">Phương thức tính</td><td style="font-weight:600">${(b.method||'').startsWith('target-bill')?'Tiền điện mục tiêu':'Cắt bậc điện cao (5+6)'}</td></tr>
+      ${b.targetGridKwh!=null?`<tr><td style="padding:6px 0;color:var(--gray-text)">Lưới mục tiêu</td><td style="font-weight:600">${fmtN(Math.round(b.targetGridKwh))} kWh/tháng → ${fmtVnd(calcBill(Math.round(b.targetGridKwh)))}/tháng</td></tr>`:''}
+      ${b.highTierKwh!=null?`<tr><td style="padding:6px 0;color:var(--gray-text)">kWh bậc cao (>300)</td><td style="font-weight:600">${fmtN(b.highTierKwh)} kWh/tháng</td></tr>`:''}
+      <tr><td style="padding:6px 0;color:var(--gray-text)">Nhu cầu pin / tháng</td><td style="font-weight:600">${fmtN(b.battMonthlyKwh||0)} kWh</td></tr>
+      <tr><td style="padding:6px 0;color:var(--gray-text)">Nhu cầu pin / ngày</td><td style="font-weight:600">${b.battDailyKwh||+(( b.battMonthlyKwh||0)/30).toFixed(2)} kWh</td></tr>
+      <tr><td style="padding:6px 0;color:var(--gray-text)">DOD pin</td><td style="font-weight:600">${b.battDOD||80}%</td></tr>
+      <tr><td style="padding:6px 0;color:var(--gray-text)">Dung lượng thô cần</td><td style="font-weight:600">${b.battRawKwh||0} kWh</td></tr>
+      <tr style="border-top:2px solid var(--gray-border)">
+        <td style="padding:8px 0;font-weight:700">Kết quả</td>
+        <td style="font-weight:700;color:var(--teal)">${r.numBatts} viên × ${b.battModuleKwh||+(r.battKwh/r.numBatts).toFixed(1)} kWh = ${r.battKwh} kWh tổng</td>
+      </tr>
+    </table>
+  </div>`:''}
+
+  <!-- SECTION 4: TIỀN ĐIỆN SAU LẮP ĐẶT -->
+  <div class="card">
+    <div class="card-title">💡 Tiền Điện Sau Khi Lắp Hệ Thống (Năm 1)</div>
+    <table style="width:100%;font-size:13px;border-collapse:collapse;margin-bottom:12px">
+      <tr><td style="padding:6px 0;color:var(--gray-text);width:60%">Sản lượng PV / tháng</td><td style="text-align:right;font-weight:600">${fmtN(pvM)} kWh</td></tr>
+      <tr><td style="padding:6px 0;color:var(--gray-text)">Nhu cầu ban ngày (${Math.round(dp*100)}%)</td><td style="text-align:right">${fmtN(Math.round(kwh*dp))} kWh</td></tr>
+      <tr><td style="padding:6px 0;color:var(--gray-text)">PV bù ban ngày</td><td style="text-align:right;color:var(--teal);font-weight:600">−${fmtN(Math.round(Math.min(pvM,kwh*dp)))} kWh</td></tr>
+      ${r.hasBatt?`
+      <tr><td style="padding:6px 0;color:var(--gray-text)">PV dư → nạp pin</td><td style="text-align:right;color:var(--teal);font-weight:600">−${fmtN(Math.round(Math.min(Math.max(0,pvM-kwh*dp)*0.95,r.battKwh*(( DB.batteries[r.battIdx]||{dod:80}).dod/100)*30)))} kWh</td></tr>
+      <tr><td style="padding:6px 0;color:var(--gray-text)">Nhu cầu ban đêm (${Math.round(ndp*100)}%)</td><td style="text-align:right">${fmtN(Math.round(kwh*ndp))} kWh</td></tr>`:`
+      <tr><td style="padding:6px 0;color:var(--gray-text)">Nhu cầu ban đêm (${Math.round(ndp*100)}%)</td><td style="text-align:right">${fmtN(Math.round(kwh*ndp))} kWh</td></tr>`}
+      <tr style="border-top:2px solid var(--gray-border)">
+        <td style="padding:8px 0;font-weight:700">Điện lấy từ lưới còn lại</td>
+        <td style="text-align:right;font-weight:700;color:var(--orange)">${fmtN(Math.round(remKwhAfter))} kWh/tháng</td>
+      </tr>
+    </table>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div class="stat-mini" style="flex:1">
+        <span class="stat-lbl">Tiền điện còn trả EVN</span>
+        <span class="stat-val" style="color:var(--teal)">${fmtVnd(r.remainBillMonthly)}/tháng</span>
+      </div>
+      <div class="stat-mini" style="flex:1">
+        <span class="stat-lbl">Giảm từ</span>
+        <span class="stat-val">${fmtVnd(r.monthBill)} → ${fmtVnd(r.remainBillMonthly)}</span>
+      </div>
+      <div class="stat-mini" style="flex:1">
+        <span class="stat-lbl">Tiết kiệm / tháng (năm 1)</span>
+        <span class="stat-val" style="color:var(--teal)">−${fmtVnd(r.monthBill-r.remainBillMonthly)}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: SẢN LƯỢNG QUA CÁC NĂM -->
+  <div class="card">
+    <div class="card-title">📈 Sản Lượng & Suy Giảm Qua Các Năm (${cfg.degradation}%/năm)</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="background:var(--navy);color:white">
+        <th style="padding:8px 11px;text-align:left;font-weight:500">Năm</th>
+        <th style="padding:8px 11px;text-align:right;font-weight:500">Sản lượng/năm</th>
+        <th style="padding:8px 11px;text-align:right;font-weight:500">Sản lượng/tháng</th>
+      </tr></thead>
+      <tbody>${genRows}</tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 6: TÀI CHÍNH TÓM TẮT -->
+  <div class="card">
+    <div class="card-title">💰 Tóm Tắt Tài Chính</div>
+    <table style="width:100%;font-size:13px;border-collapse:collapse">
+      <tr><td style="padding:7px 0;color:var(--gray-text);width:60%">Chi phí hệ thống (có VAT)</td><td style="text-align:right;font-weight:700;font-size:15px">${fmtVnd(r.quoteTotal)}</td></tr>
+      <tr><td style="padding:7px 0;color:var(--gray-text)">Tiết kiệm năm 1 (trừ O&M)</td><td style="text-align:right;font-weight:600;color:var(--teal)">${fmtVnd(r.save1)}/năm</td></tr>
+      <tr><td style="padding:7px 0;color:var(--gray-text)">= ${fmtVnd(Math.round(r.save1/12))}/tháng</td><td style="text-align:right;color:var(--gray-text)">tiết kiệm bình quân</td></tr>
+      <tr><td style="padding:7px 0;color:var(--gray-text)">Thời gian hoàn vốn</td><td style="text-align:right;font-weight:700;font-size:15px;color:var(--orange)">${r.payback} năm</td></tr>
+      <tr><td style="padding:7px 0;color:var(--gray-text)">Tổng tiết kiệm 25 năm</td><td style="text-align:right;font-weight:700;color:var(--teal)">${fmtVnd(r.save25)}</td></tr>
+      <tr><td style="padding:7px 0;color:var(--gray-text)">ROI 25 năm</td><td style="text-align:right;font-weight:600">${r.roi}%</td></tr>
+      <tr><td style="padding:7px 0;color:var(--gray-text)">Giảm CO₂ năm 1</td><td style="text-align:right;font-weight:600">${+(r.annualKwh*0.6/1000).toFixed(2)} tấn/năm</td></tr>
+    </table>
+  </div>
+  `;
+}
+
+function renderPaybackChart(){
+  const r=calcResult;
+  const years=[1,3,5,7,9,11,13,15,17,19,21,23,25];
+  let cum=0,yGen=r.annualKwh;
+  const basePrice=r.monthBill/r.kwh;
+  const data=years.map(y=>{
+    let s=0;
+    const prev=years[years.indexOf(y)-1]||0;
+    for(let i=prev;i<y;i++){
+      s+=Math.min(yGen,r.kwh*12)*basePrice*Math.pow(1+DB.cfg.elecRise/100,i);
+      yGen*=(1-DB.cfg.degradation/100);
+    }
+    cum+=s;
+    return Math.round(cum-r.quoteTotal);
+  });
+  const minV=Math.min(...data),maxV=Math.max(...data),range=maxV-minV||1;
+  let html=`<div style="display:flex;align-items:flex-end;gap:5px;height:90px;padding:0 2px">`;
+  years.forEach((y,i)=>{
+    const v=data[i];
+    const pct=Math.max(5,Math.round(((v-minV)/range)*85));
+    const col=v<0?'#E24B4A':i===data.findIndex(x=>x>=0)?'#E8620A':'#0E7C6B';
+    html+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center">
+      <span style="font-size:9px;color:${col};font-weight:600;margin-bottom:2px">${v<0?Math.round(v/1000000)+'M':'+'+Math.round(v/1000000)+'M'}</span>
+      <div style="width:100%;height:${pct}px;background:${col};border-radius:3px 3px 0 0"></div>
+      <span style="font-size:9px;color:var(--gray-text);margin-top:2px">N${y}</span>
+    </div>`;
+  });
+  html+=`</div><p style="font-size:11px;color:var(--gray-text);margin-top:7px;text-align:center">🎯 Hoàn vốn năm thứ ${r.payback} · Cam = điểm hoàn vốn · Xanh = có lợi nhuận</p>`;
+  document.getElementById('payback-chart').innerHTML=html;
+}
+
+// ===== DB PAGE =====
+function renderStaffList(){
+  const el=document.getElementById('staff-list-db');
+  if(!el)return;
+  if(!DB.staffList)DB.staffList=[];
+  el.innerHTML='';
+  DB.staffList.forEach((s,i)=>{
+    el.innerHTML+=`<div class="db-row staff-row" style="grid-template-columns:2fr 1.5fr 1fr auto">
+      <span><input value="${s.name||''}" placeholder="Nguyễn Văn A" style="width:100%" oninput="DB.staffList[${i}].name=this.value;populateStaffList()"></span>
+      <span><input value="${s.phone||''}" placeholder="0909 xxx xxx" style="width:100%" oninput="DB.staffList[${i}].phone=this.value;populateStaffList()"></span>
+      <span><input value="${s.role||''}" placeholder="Tư vấn viên" style="width:100%" oninput="DB.staffList[${i}].role=this.value;populateStaffList()"></span>
+      <span><button class="del-btn" onclick="DB.staffList.splice(${i},1);renderDBPage()">×</button></span>
+    </div>`;
+  });
+}
+function addStaff(){
+  if(!DB.staffList)DB.staffList=[];
+  DB.staffList.push({name:'',phone:'',role:'Tư vấn viên'});
+  renderDBPage();
+  // Focus vào ô tên vừa thêm
+  const rows=document.querySelectorAll('#staff-list-db .staff-row');
+  if(rows.length) rows[rows.length-1].querySelector('input').focus();
+}
+
+// ════════════════════════════════════════════════
+// HÌNH ẢNH THIẾT BỊ — lưu base64 vào DB
+// ════════════════════════════════════════════════
+function renderDeviceImages(){
+  // Gom tất cả thiết bị: panels, inverters, batteries
+  const allDevs = [
+    ...DB.panels.map((d,i)=>({type:'panels',idx:i,label:'Tấm Pin',name:d.name.split('\n')[0]})),
+    ...DB.inverters.map((d,i)=>({type:'inverters',idx:i,label:'Inverter',name:d.name.split('\n')[0]})),
+    ...DB.batteries.map((d,i)=>({type:'batteries',idx:i,label:'Pin lưu trữ',name:d.name.split('\n')[0]}))
+  ];
+  const sec = document.getElementById('device-img-upload');
+  const list = document.getElementById('dev-img-list');
+  if(!sec||!list) return;
+  if(allDevs.length===0){sec.style.display='none';return;}
+  sec.style.display='block';
+  list.innerHTML = allDevs.map(d=>{
+    const imgData = DB[d.type][d.idx].image||'';
+    const thumbHTML = imgData
+      ? `<img class="dev-img-thumb" src="${imgData}" alt="">`
+      : `<div class="dev-img-thumb empty">📷</div>`;
+    const delBtn = imgData
+      ? `<button class="dev-img-del" onclick="deleteDevImg('${d.type}',${d.idx})" title="Xóa ảnh">✕</button>`
+      : '';
+    return `<div class="dev-img-row">
+      ${thumbHTML}
+      <div class="dev-img-name">[${d.label}] ${d.name}</div>
+      <input type="file" accept="image/*" style="display:none" id="img-input-${d.type}-${d.idx}"
+        onchange="uploadDeviceImg('${d.type}',${d.idx},this)">
+      <button class="dev-img-btn" onclick="document.getElementById('img-input-${d.type}-${d.idx}').click()">
+        ${imgData?'🔄 Đổi ảnh':'📷 Tải ảnh'}
+      </button>
+      ${delBtn}
+    </div>`;
+  }).join('');
+}
+
+function uploadDeviceImg(type, idx, input){
+  const file = input.files[0];
+  if(!file) return;
+  // Giới hạn 1.5MB để tránh localStorage đầy
+  if(file.size > 1.5*1024*1024){
+    showToast('Ảnh quá lớn! Vui lòng chọn ảnh < 1.5MB','error'); return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    DB[type][idx].image = e.target.result;
+    localStorage.setItem('nvh_solar_db', JSON.stringify(DB));
+    renderDeviceImages();
+    showToast('✅ Đã lưu ảnh '+DB[type][idx].name.split('\n')[0],'success');
+  };
+  reader.readAsDataURL(file);
+}
+
+function deleteDevImg(type, idx){
+  DB[type][idx].image = '';
+  localStorage.setItem('nvh_solar_db', JSON.stringify(DB));
+  renderDeviceImages();
+  showToast('Đã xóa ảnh','info');
+}
+
+function renderDBPage(){
+  var sumEl=document.getElementById('db-summary');
+  if(sumEl){
+    var lines=[];
+    if(DB.panels.length) lines.push('✅ Tấm Pin: '+DB.panels.length+' loại — '+DB.panels.map(function(p){return p.name.split('\n')[0];}).join(' | '));
+    if(DB.inverters.length) lines.push('✅ Inverter: '+DB.inverters.length+' loại — '+DB.inverters.map(function(p){return p.name.split('\n')[0];}).join(' | '));
+    if(DB.batteries.length) lines.push('✅ Pin lưu trữ: '+DB.batteries.length+' loại — '+DB.batteries.map(function(p){return p.name.split('\n')[0];}).join(' | '));
+    if(lines.length){sumEl.innerHTML=lines.join('<br>');sumEl.style.display='block';}
+    else{sumEl.innerHTML='⚠️ Chưa có dữ liệu thiết bị. Hãy nhập từ file Excel.';sumEl.style.display='block';}
+  }
+  renderMatList();
+  renderStaffList();
+  renderDeviceImages();
+  const c=DB.cfg;
+  document.getElementById('cfg-pr').value=c.pr||80;
+  document.getElementById('cfg-safety').value=c.safety;
+  document.getElementById('cfg-elec-rise').value=c.elecRise;
+  document.getElementById('cfg-sell-price').value=c.sellPrice;
+  document.getElementById('cfg-degradation').value=c.degradation;
+  document.getElementById('cfg-vat').value=c.vat;
+  const co=DB.company||{};
+  document.getElementById('cfg-company-name').value=co.companyName||DEFAULT_DB.company.companyName;
+  document.getElementById('cfg-company-addr').value=co.companyAddr||DEFAULT_DB.company.companyAddr;
+  document.getElementById('cfg-company-tax').value=co.companyTax||DEFAULT_DB.company.companyTax;
+  document.getElementById('cfg-company-phone').value=co.companyPhone||DEFAULT_DB.company.companyPhone;
+  document.getElementById('cfg-company-email').value=co.companyEmail||DEFAULT_DB.company.companyEmail;
+  document.getElementById('cfg-staff').value=co.staff||'';
+  document.getElementById('cfg-bgprefix').value=co.bgprefix||'NVH';
+  document.getElementById('cfg-terms').value=co.terms||DEFAULT_DB.company.terms;
+}
+
+function renderList(containerId,arr,fields,labels){
+  const el=document.getElementById(containerId);
+  el.innerHTML='';
+  arr.forEach((item,i)=>{
+    const dbKey=containerId.replace('-list','');
+    const inputs=fields.map(f=>`<input value="${item[f]||''}" onchange="DB['${dbKey}'][${i}]['${f}']=isNaN(this.value)?this.value:+this.value" style="width:100%">`);
+    el.innerHTML+=`<div class="db-row">${inputs.map(x=>`<span>${x}</span>`).join('')}<span><button class="del-btn" onclick="DB['${dbKey}'].splice(${i},1);renderDBPage()">×</button></span></div>`;
+  });
+}
+
+function renderMatList(){
+  const el=document.getElementById('materials-list');
+  el.innerHTML='';
+  const colStyle='grid-template-columns:2fr 0.7fr 1.2fr 1.3fr auto';
+  el.innerHTML+=`<div class="db-row header" style="${colStyle}"><span>Tên hạng mục</span><span>ĐVT</span><span>Công thức SL</span><span>Giá đơn / CT giá</span><span></span></div>`;
+  DB.materials.forEach((m,i)=>{
+    const costVal=m.cost_formula||m.cost||'';
+    el.innerHTML+=`<div class="db-row" style="${colStyle}">
+      <span><input value="${m.name}" onchange="DB.materials[${i}].name=this.value" style="width:100%"></span>
+      <span><input value="${m.unit}" onchange="DB.materials[${i}].unit=this.value" style="width:100%"></span>
+      <span><input value="${m.qty_formula||''}" onchange="DB.materials[${i}].qty_formula=this.value" style="width:100%;font-size:12px"></span>
+      <span><input value="${costVal}" onchange="updateMatCost(${i},this.value)" style="width:100%;font-size:12px"></span>
+      <span><button class="del-btn" onclick="DB.materials.splice(${i},1);renderDBPage()">×</button></span>
+    </div>`;
+  });
+}
+
+function updateMatCost(i,v){
+  if(/kwp|panels|cable/.test(v)){DB.materials[i].cost_formula=v;delete DB.materials[i].cost;}
+  else{DB.materials[i].cost=+v;delete DB.materials[i].cost_formula;}
+}
+function addPanel(){DB.panels.push({name:'Tấm pin mới',watt:550,cost:2000000,area:1.7});renderDBPage();}
+function addInverter(){DB.inverters.push({name:'Inverter mới',kw:5,cost:20000000,eff:94});renderDBPage();}
+function addBattery(){DB.batteries.push({name:'Pin mới',kwh:5,cost:25000000,dod:90});renderDBPage();}
+function addMaterial(){DB.materials.push({name:'Hạng mục mới',unit:'Gói',qty_formula:'1',cost:1000000});renderDBPage();}
+function clearSurvey(){
+  document.querySelectorAll('#page-survey input,#page-survey select,#page-survey textarea').forEach(el=>{
+    if(el.tagName==='SELECT')el.selectedIndex=0;else el.value='';
+  });
+  document.querySelectorAll('#page-survey .radio-group').forEach(g=>{
+    const btns=g.querySelectorAll('.radio-btn');
+    btns.forEach(b=>b.classList.remove('selected'));
+    if(btns[0])btns[0].classList.add('selected');
+  });
+}
+function fmtVnd(n){return Math.round(n).toLocaleString('vi-VN')+' đ';}
+function fmtN(n){return Math.round(n).toLocaleString('vi-VN');}
+
+// ════════════════════════════════════════════════
+// OFFLINE FILE HELPERS – không cần thư viện ngoài
+// ════════════════════════════════════════════════
+function downloadBlob(filename, content, mimeType){
+  const blob=new Blob([content],{type:mimeType});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(a.href),100);
+}
+
+// Array-of-arrays → CSV string (BOM + dấu phẩy, Excel mở được với UTF-8)
+function aoaToCSV(rows){
+  return '﻿'+rows.map(row=>
+    (row||[]).map(cell=>{
+      const s=String(cell??'');
+      return (s.includes(',')||s.includes('"')||s.includes('\n'))
+        ?'"'+s.replace(/"/g,'""')+'"':s;
+    }).join(',')
+  ).join('\r\n');
+}
+
+function exportPDF(){
+  // Use browser print as PDF - triggers system print dialog with "Save as PDF" option
+  // Hide everything except the quote document
+  const style=document.createElement('style');
+  style.id='pdf-print-style';
+  style.textContent=`@media print{
+    body>*{display:none!important}
+    #page-result{display:block!important}
+    #page-result .main>*{display:none!important}
+    #page-result .main .quote-doc{display:block!important}
+    #page-result .main .fin-grid{display:none!important}
+    .no-print{display:none!important}
+    .result-header,.kpi-grid,#device-selector-card,.profit-bar,.card:not(.quote-doc){display:none!important}
+  }`;
+  document.head.appendChild(style);
+  window.print();
+  setTimeout(()=>{const s=document.getElementById('pdf-print-style');if(s)s.remove();},1000);
+}
+
+// ===== EXPORT EXCEL =====
+function exportExcel(){
+  if(!calcResult.pvKwp){alert('Chưa có dữ liệu báo giá!');return;}
+  const r=calcResult;
+  const nonGroup=quoteItems.filter(i=>!i.isGroup);
+  const sub=nonGroup.reduce((s,i)=>s+i.qty*i.quoteUnit,0);
+  const vat=Math.round(sub*DB.cfg.vat/100);
+
+  const rows=[
+    ['BÁO GIÁ HỆ THỐNG ĐIỆN MẶT TRỜI ÁP MÁI – NAM VIỆT HƯNG'],
+    [],
+    ['Khách hàng:',r.name,'','Điện thoại:',r.phone],
+    ['Địa chỉ:',r.address],
+    ['Tỉnh/Thành:',r.cityName,'','Tiêu thụ:',r.kwh+' kWh/tháng'],
+    ['Ngày lập:',new Date().toLocaleDateString('vi-VN'),'','Số BG:',genBgNum()],
+    [],
+    ['STT','Hạng mục / Thiết bị','ĐVT','Số lượng','Đơn giá (đ)','Thành tiền (đ)']
+  ];
+  let stt=0;
+  quoteItems.forEach(item=>{
+    if(item.isGroup) rows.push(['',item.group,'','','','']);
+    else{stt++;rows.push([stt,item.name,item.unit,item.qty,item.quoteUnit,item.qty*item.quoteUnit]);}
+  });
+  rows.push(['','Tổng cộng (chưa VAT)','','','',sub]);
+  rows.push(['',`Thuế VAT (${DB.cfg.vat}%)`,'','','',vat]);
+  rows.push(['','TỔNG CỘNG (GỒM VAT)','','','',sub+vat]);
+  rows.push([]);
+  rows.push(['=== THÔNG SỐ KỸ THUẬT & HIỆU QUẢ ĐẦU TƯ ===']);
+  rows.push(['Công suất PV',r.pvKwp+' kWp']);
+  rows.push(['Số tấm pin',r.numPanels+' tấm × '+r.panel.watt+'W']);
+  rows.push(['Loại tấm pin',r.panel.name]);
+  rows.push(['Inverter',r.inverter.name]);
+  rows.push(['Pin lưu trữ',r.battKwh?(r.battKwh+' kWh ('+r.numBatts+' module)'):'Không có (On-Grid)']);
+  rows.push(['Giờ nắng đỉnh (PSH)',r.psh+' h/ngày']);
+  rows.push(['Performance Ratio',r.pr+'%']);
+  rows.push(['Sản lượng năm 1',fmtN(r.annualKwh)+' kWh/năm']);
+  rows.push(['Tiền điện còn trả EVN/tháng',r.remainBillMonthly!=null?fmtVnd(r.remainBillMonthly)+'/tháng':'–']);
+  rows.push(['Tiết kiệm năm 1',r.save1]);
+  rows.push(['Thời gian hoàn vốn',r.payback+' năm']);
+  rows.push(['Tổng tiết kiệm 25 năm',r.save25]);
+  rows.push(['ROI 25 năm',r.roi+'%']);
+  rows.push(['Giảm CO₂ / năm',+(r.annualKwh*0.6/1000).toFixed(2)+' tấn']);
+
+  const fname=`BaoGia_NVH_${r.name.replace(/\s+/g,'_')}_${r.pvKwp}kWp_${new Date().toISOString().slice(0,10)}.csv`;
+  downloadBlob(fname, aoaToCSV(rows), 'text/csv;charset=utf-8');
+}
+
+// ===== LIVE ANALYSIS ENGINE =====
+// FIX LỖI 5: dùng prev thay vì min để tính band size nhất quán
+const EVN_TIERS_FULL=[
+  {id:1,label:'Bậc 1',prev:0,  max:50,  price:Math.round(1984*1.08), color:'#0E7C6B'},
+  {id:2,label:'Bậc 2',prev:50, max:100, price:Math.round(2050*1.08), color:'#1D9E75'},
+  {id:3,label:'Bậc 3',prev:100,max:200, price:Math.round(2380*1.08), color:'#F59E0B'},
+  {id:4,label:'Bậc 4',prev:200,max:300, price:Math.round(2998*1.08), color:'#E8620A'},
+  {id:5,label:'Bậc 5',prev:300,max:400, price:Math.round(3350*1.08), color:'#D04F08'},
+  {id:6,label:'Bậc 6',prev:400,max:Infinity,price:Math.round(3460*1.08),color:'#A32D2D'}
+];
+
+function toggleTargetInput(){
+  const mode=getRadioVal('target-mode');
+  document.getElementById('target-pct-input').style.display=mode==='pct'?'block':'none';
+  document.getElementById('target-bill-input').style.display=mode==='bill'?'block':'none';
+}
+
+function liveAnalyze(){
+  const rawVal=+document.getElementById('s-kwh').value||0;
+  if(!rawVal){document.getElementById('live-analysis').style.display='none';return;}
+  const isKwh=getRadioVal('elec-input-type')==='kwh';
+  const kwh=isKwh?rawVal:moneyToKwh(rawVal);
+  if(kwh<1){document.getElementById('live-analysis').style.display='none';return;}
+
+  document.getElementById('live-analysis').style.display='block';
+
+  const dayPct=+document.getElementById('s-day-pct').value/100;
+  const nightPct=1-dayPct;
+  const kwhDay=kwh*dayPct;
+  const kwhNight=kwh*nightPct;
+
+  // ---- Tier breakdown (FIX LỖI 5: dùng t.prev thay t.min) ----
+  const tierUsage=[];
+  let rem=kwh;
+  for(const t of EVN_TIERS_FULL){
+    const bandSize = t.max===Infinity ? rem : t.max - t.prev;
+    const used = Math.min(rem, bandSize);
+    const cost = Math.round(used*t.price);
+    tierUsage.push({...t, used, cost, active:used>0});
+    rem -= used;
+    if(rem<=0) break;
+  }
+  const totalBill=tierUsage.reduce((s,t)=>s+t.cost,0);
+
+  // ---- Tier chart ----
+  const maxCost=Math.max(...tierUsage.map(t=>t.cost),1);
+  let chartHtml=`<div class="tier-bars">`;
+  tierUsage.forEach(t=>{
+    const h=t.active?Math.max(8,Math.round((t.cost/maxCost)*95)):4;
+    const amtStr=t.active?(t.cost>=1000?Math.round(t.cost/1000)+'K':t.cost+'đ'):'';
+    chartHtml+=`<div class="tier-bar-wrap" title="${t.label}: ${t.used.toFixed(0)} kWh – ${t.cost.toLocaleString('vi-VN')}đ">
+      <div class="tier-amt" style="color:${t.active?t.color:'#ccc'}">${amtStr}</div>
+      <div class="tier-bar ${t.active?'active':'inactive'}" style="height:${h}px;background:${t.color}"></div>
+      <div class="tier-lbl">${t.label}</div>
+    </div>`;
+  });
+  chartHtml+=`</div>
+  <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--gray-text)">
+    <span>Tổng: <strong style="color:var(--navy)">${kwh.toFixed(0)} kWh</strong></span>
+    <span>Tổng tiền: <strong style="color:var(--orange)">${totalBill.toLocaleString('vi-VN')}đ</strong></span>
+    <span>Giá TB: <strong style="color:var(--navy)">${kwh>0?Math.round(totalBill/kwh).toLocaleString('vi-VN'):0}đ/kWh</strong></span>
+  </div>`;
+  document.getElementById('tier-chart').innerHTML=chartHtml;
+
+  // ---- Tier table ----
+  let tableHtml='';
+  tierUsage.forEach(t=>{
+    const isHigh=t.id>=5;
+    const bg=!t.active?'background:#F9F9F9':isHigh?'background:#FFF3EB':'';
+    const badge=!t.active?'<span style="background:#E5E7EB;color:#888;padding:1px 6px;border-radius:10px;font-size:10px">Không dùng</span>':
+                isHigh?`<span style="background:${t.color}22;color:${t.color};padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600">Bậc cao ⚠</span>`:
+                `<span style="background:var(--teal-light);color:var(--teal);padding:1px 6px;border-radius:10px;font-size:10px">OK</span>`;
+    const pctOfBill=totalBill>0?((t.cost/totalBill)*100).toFixed(0):0;
+    tableHtml+=`<tr style="${bg}">
+      <td style="padding:7px 10px;font-weight:600;color:${t.active?t.color:'#ccc'}">${t.label}</td>
+      <td style="padding:7px 10px;text-align:center;color:var(--gray-text)">${t.max===Infinity?'> 400':(t.prev===0?'0':'('+t.prev+')')+' – '+(t.max===Infinity?'∞':t.max)} kWh</td>
+      <td style="padding:7px 10px;text-align:right;color:var(--gray-text)">${t.price.toLocaleString('vi-VN')}</td>
+      <td style="padding:7px 10px;text-align:right;font-weight:${t.active?600:400};color:${t.active?'var(--text)':'#ccc'}">${t.active?t.used.toFixed(0)+' kWh':'–'}</td>
+      <td style="padding:7px 10px;text-align:right;font-weight:${t.active?600:400};color:${t.active?t.color:'#ccc'}">${t.active?t.cost.toLocaleString('vi-VN')+'đ':'–'}</td>
+      <td style="padding:7px 10px;text-align:center">${badge}${t.active?` <span style="color:var(--gray-text);font-size:10px">${pctOfBill}%</span>`:''}</td>
+    </tr>`;
+  });
+  document.getElementById('tier-tbody').innerHTML=tableHtml;
+  document.getElementById('tier-tfoot').innerHTML=`<tr style="background:var(--navy);color:white">
+    <td colspan="4" style="padding:7px 10px;font-weight:600">TỔNG CỘNG</td>
+    <td style="padding:7px 10px;text-align:right;font-weight:700">${totalBill.toLocaleString('vi-VN')}đ</td>
+    <td></td>
+  </tr>`;
+
+  // ---- Day/night bar ----
+  document.getElementById('daynight-bar').innerHTML=`
+    <div class="dn-bar-wrap">
+      <div class="dn-day" style="width:${dayPct*100}%">🌞 ${(dayPct*100).toFixed(0)}% – ${kwhDay.toFixed(0)} kWh</div>
+      <div class="dn-night" style="width:${nightPct*100}%">🌙 ${(nightPct*100).toFixed(0)}% – ${kwhNight.toFixed(0)} kWh</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray-text)">
+      <span>Ban ngày: PV tự phát & dùng trực tiếp</span>
+      <span>Ban đêm: Dùng từ pin lưu trữ hoặc EVN</span>
+    </div>`;
+
+  // ---- Recommendation engine ----
+  renderRecommendation(kwh, kwhDay, kwhNight, tierUsage, totalBill);
+  updateBattCalc();
+}
+
+function calcKwhAfterPV(kwh, pvKwhMonth){
+  // FIX LỖI 5: dùng t.prev thay t.min; bù từ bậc cao xuống trước
+  let remaining = pvKwhMonth;
+  let rem = kwh, usages = [];
+  for(const t of EVN_TIERS_FULL){
+    const bandSize = t.max===Infinity ? rem : t.max - t.prev;
+    const used = Math.min(rem, bandSize);
+    usages.push({...t, used});
+    rem -= used;
+    if(rem<=0) break;
+  }
+  for(let i=usages.length-1; i>=0&&remaining>0; i--){
+    const deduct = Math.min(usages[i].used, remaining);
+    usages[i].used -= deduct;
+    remaining -= deduct;
+  }
+  return Math.round(usages.reduce((s,t)=>s+t.used*t.price, 0));
+}
+
+function renderRecommendation(kwh, kwhDay, kwhNight, tierUsage, totalBill){
+  const mode=getRadioVal('target-mode')||'cut56';
+  const cityParts=document.getElementById('s-city').value.split(':');
+  const psh=parseFloat(cityParts[0])||4.5;
+  const pr=(DB.cfg.pr||80)/100;
+
+  // kWh PV cần bù để đạt mục tiêu
+  let targetKwhPV_ongrid=0, targetKwhPV_hybrid=0, _billBattMonthly=-1;
+
+  if(mode==='cut56'){
+    // Cắt hết bậc 5 và 6
+    targetKwhPV_ongrid=tierUsage.filter(t=>t.id>=5).reduce((s,t)=>s+t.used,0);
+    targetKwhPV_hybrid=targetKwhPV_ongrid;
+  } else if(mode==='cut6'){
+    targetKwhPV_ongrid=tierUsage.find(t=>t.id===6)?.used||0;
+    targetKwhPV_hybrid=targetKwhPV_ongrid;
+  } else if(mode==='pct'){
+    const pct=+document.getElementById('s-target-pct').value/100||0.7;
+    targetKwhPV_ongrid=kwh*pct;
+    targetKwhPV_hybrid=kwh*pct;
+  } else if(mode==='bill'){
+    // Tiền điện mục tiêu
+    const tbv=+document.getElementById('s-target-bill').value||0;
+    if(tbv>0){
+      const dayPct=+document.getElementById('s-day-pct').value/100||0.4;
+      const nightPct=1-dayPct;
+      const targetGrid=inverseCalcBill(tbv);
+      // On-Grid: solar bù = kwh - targetGrid
+      targetKwhPV_ongrid=Math.max(0,kwh-targetGrid);
+      // Hybrid: solar = nhu cầu ngày + (nhu cầu đêm - targetGrid)/0.95
+      const nightDemand=kwh*nightPct;
+      const battNeed=Math.max(0,nightDemand-targetGrid);
+      targetKwhPV_hybrid=kwh*dayPct + battNeed/0.95;
+      // Ghi đè battKwhNeeded cho bill mode
+      _billBattMonthly=battNeed;
+    } else {
+      targetKwhPV_ongrid=tierUsage.filter(t=>t.id>=5).reduce((s,t)=>s+t.used,0);
+      targetKwhPV_hybrid=targetKwhPV_ongrid;
+    }
+  } else { // full 100%
+    targetKwhPV_ongrid=kwh;
+    targetKwhPV_hybrid=kwh;
+  }
+
+  // On-Grid kWp: chỉ bù ban ngày → targetKwhPV_ongrid / (PSH × 30 × PR)
+  const ongridKwpRaw=targetKwhPV_ongrid/(psh*30*pr);
+  const ongridKwp=Math.ceil(ongridKwpRaw*2)/2;
+
+  // Hybrid kWp: bù cả ngày lẫn đêm (toàn bộ target)
+  const hybridKwpRaw=targetKwhPV_hybrid/(psh*30*pr);
+  const hybridKwp=Math.ceil(hybridKwpRaw*2)/2;
+
+  // Battery sizing: dùng _billBattMonthly nếu bill mode, ngược lại tính theo tỷ lệ
+  const selectedBatt = DB.batteries.length > 0 ? DB.batteries[0] : {kwh:5, dod:90, name:'LFP 5kWh'};
+  const usablePerModule = selectedBatt.kwh * selectedBatt.dod / 100;
+  let battKwhDaily;
+  if(_billBattMonthly >= 0){
+    battKwhDaily = _billBattMonthly / 30;
+  } else {
+    const battKwhNeeded = kwhNight * (mode==='full' ? 1 : Math.min(1, targetKwhPV_hybrid/kwh));
+    battKwhDaily = battKwhNeeded / 30;
+  }
+  const battRawKwh = battKwhDaily / (selectedBatt.dod / 100);
+  const battModules = Math.max(1, Math.ceil(battRawKwh / selectedBatt.kwh));
+  const battTotalKwh = battModules * selectedBatt.kwh;
+
+  // Bill savings
+  const ongridBill=calcKwhAfterPV(kwh, ongridKwp*psh*30*pr);
+  const hybridBill=calcKwhAfterPV(kwh, hybridKwp*psh*30*pr);
+  const ongridSave=totalBill-ongridBill;
+  const hybridSave=totalBill-hybridBill;
+  const ongridPct=totalBill>0?Math.round(ongridSave/totalBill*100):0;
+  const hybridPct=totalBill>0?Math.round(hybridSave/totalBill*100):0;
+
+  // Target kWh bill with PV
+  const billAfterHybrid=Math.max(0,hybridBill);
+  const highTiersAfterOngrid=calcHighTierKwh(kwh, ongridKwp*psh*30*pr);
+
+  let html=`<div class="rec-grid">
+    <div class="rec-card ongrid">
+      <div class="rc-badge">☀️ On-Grid (không pin)</div>
+      <div style="display:flex;align-items:baseline;gap:6px">
+        <div class="rc-kwp">${ongridKwp}</div><div style="font-size:14px;color:var(--teal);font-weight:600">kWp</div>
+      </div>
+      <div class="rc-detail">
+        Bù điện ban ngày: ${(ongridKwp*psh*30*pr).toFixed(0)} kWh/tháng<br>
+        Còn mua EVN: ${Math.max(0,kwh-ongridKwp*psh*30*pr).toFixed(0)} kWh/tháng<br>
+        Tiết kiệm: <strong style="color:var(--teal)">${ongridSave.toLocaleString('vi-VN')}đ/tháng (${ongridPct}%)</strong>
+      </div>
+      <div class="rc-save">Bill điện còn lại: ~${Math.max(0,ongridBill).toLocaleString('vi-VN')}đ/tháng</div>
+      <button class="rec-apply" style="background:var(--teal)" onclick="applyRecommendation(${ongridKwp},'no')">Áp dụng → Tính On-Grid ↗</button>
+    </div>
+    <div class="rec-card hybrid">
+      <div class="rc-badge">🔋 Hybrid (có pin lưu trữ)</div>
+      <div style="display:flex;align-items:baseline;gap:6px">
+        <div class="rc-kwp">${hybridKwp}</div><div style="font-size:14px;color:var(--orange);font-weight:600">kWp</div>
+      </div>
+      <div class="rc-detail">
+        Bù cả ngày & đêm: ${(hybridKwp*psh*30*pr).toFixed(0)} kWh/tháng<br>
+        Pin lưu trữ: ~${battTotalKwh} kWh (${battModules} module × ${selectedBatt.kwh}kWh – ${selectedBatt.name})<br>
+        Tiết kiệm: <strong style="color:var(--orange)">${hybridSave.toLocaleString('vi-VN')}đ/tháng (${hybridPct}%)</strong>
+      </div>
+      <div class="rc-save">Bill điện còn lại: ~${billAfterHybrid.toLocaleString('vi-VN')}đ/tháng</div>
+      <button class="rec-apply" onclick="applyRecommendation(${hybridKwp},'yes')">Áp dụng → Tính Hybrid ↗</button>
+    </div>
+  </div>
+  <div style="margin-top:10px;padding:10px 13px;background:var(--gray-bg);border-radius:8px;font-size:11px;color:var(--gray-text);line-height:1.8">
+    <strong style="color:var(--navy)">📐 Công thức tính:</strong><br>
+    kWp = kWh_cần_bù ÷ (PSH × 30 ngày × PR)<br>
+    = ${targetKwhPV_hybrid.toFixed(0)} ÷ (${psh} × 30 × ${pr}) = <strong style="color:var(--orange)">${hybridKwpRaw.toFixed(2)} kWp → làm tròn ${hybridKwp} kWp</strong><br>
+    PSH = ${psh} h/ngày · PR = ${(pr*100).toFixed(0)}% (hiệu suất thực tế hệ thống)
+  </div>`;
+  document.getElementById('recommend-panel').innerHTML=html;
+}
+
+// ===== SO SÁNH PHƯƠNG ÁN =====
+let compareList = [];
+
+function saveToCompare(){
+  if(!calcResult||!calcResult.pvKwp){alert('Chưa có kết quả tính toán!');return;}
+  if(compareList.length>=3){alert('Tối đa 3 phương án so sánh!\nHãy xóa bớt phương án cũ.');return;}
+  compareList.push(JSON.parse(JSON.stringify(calcResult)));
+  showToast('Đã lưu phương án '+compareList.length+' vào So Sánh','success');
+}
+
+function renderCompareTable(){
+  const wrap=document.getElementById('compare-table-wrap');
+  const hint=document.getElementById('compare-hint');
+  if(!wrap)return;
+  if(compareList.length===0){
+    wrap.innerHTML='';
+    if(hint)hint.style.display='block';
+    return;
+  }
+  if(hint)hint.style.display='none';
+  const fmt=n=>n==null?'—':(typeof n==='number'?n.toLocaleString('vi-VN'):n);
+  const rows=[
+    ['Công suất PV (kWp)','pvKwp'],
+    ['Pin lưu trữ (kWh)','battKwh'],
+    ['Thành phố','cityName'],
+    ['Điện sản xuất/năm (kWh)','pvKwhYear'],
+    ['Hóa đơn còn lại/tháng (đ)','remainBillMonthly'],
+    ['Tổng chi phí (đ)','costTotal'],
+    ['Tổng báo giá (đ)','quoteTotal'],
+    ['Tiết kiệm năm 1 (đ)','save1'],
+    ['Tiết kiệm 25 năm (đ)','save25'],
+    ['Thời gian hoàn vốn (năm)','payback'],
+    ['ROI 25 năm (%)','roi'],
+  ];
+  let html='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">';
+  html+='<thead><tr><th style="text-align:left;padding:8px;background:#1A2744;color:#fff;border:1px solid #ddd">Chỉ tiêu</th>';
+  compareList.forEach(function(_,i){
+    html+='<th style="text-align:center;padding:8px;background:#0E7C6B;color:#fff;border:1px solid #ddd">Phương án '+(i+1)+'</th>';
+  });
+  html+='</tr></thead><tbody>';
+  rows.forEach(function(row,ri){
+    var label=row[0],key=row[1];
+    var bg=ri%2===0?'#f8f9fa':'#fff';
+    html+='<tr style="background:'+bg+'"><td style="padding:7px 8px;border:1px solid #ddd;font-weight:600">'+label+'</td>';
+    compareList.forEach(function(r){
+      html+='<td style="padding:7px 8px;border:1px solid #ddd;text-align:right">'+fmt(r[key])+'</td>';
+    });
+    html+='</tr>';
+  });
+  html+='</tbody></table></div>';
+  html+='<div style="margin-top:10px;text-align:right"><button class="btn btn-secondary" onclick="clearCompare()">🗑 Xóa tất cả</button></div>';
+  wrap.innerHTML=html;
+}
+
+function exportCompareExcel(){
+  if(compareList.length===0){alert('Chưa có phương án nào để xuất!');return;}
+  var headers=['Chỉ tiêu'];
+  compareList.forEach(function(_,i){headers.push('Phương án '+(i+1));});
+  var rows=[
+    ['Công suất PV (kWp)','pvKwp'],
+    ['Pin lưu trữ (kWh)','battKwh'],
+    ['Thành phố','cityName'],
+    ['Điện sản xuất/năm (kWh)','pvKwhYear'],
+    ['Hóa đơn còn lại/tháng (đ)','remainBillMonthly'],
+    ['Tổng chi phí (đ)','costTotal'],
+    ['Tổng báo giá (đ)','quoteTotal'],
+    ['Tiết kiệm năm 1 (đ)','save1'],
+    ['Tiết kiệm 25 năm (đ)','save25'],
+    ['Thời gian hoàn vốn (năm)','payback'],
+    ['ROI 25 năm (%)','roi'],
+  ];
+  var csv=headers.join(',')+'\n';
+  rows.forEach(function(row){
+    var label=row[0],key=row[1];
+    var vals=compareList.map(function(r){return r[key]==null?'':String(r[key]).replace(/,/g,'');});
+    csv+='"'+label+'",'+vals.join(',')+'\n';
+  });
+  var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='so-sanh-phuong-an.csv';a.click();
+  URL.revokeObjectURL(url);
+  showToast('Đã xuất file CSV','success');
+}
+
+function populateStaffList(){
+  var sel=document.getElementById('s-staff');
+  if(!sel||!DB||!DB.staffList)return;
+  var cur=sel.value;
+  sel.innerHTML='<option value="">-- Chọn nhân viên --</option>';
+  (DB.staffList||[]).forEach(function(s){
+    if(s&&s.name) sel.innerHTML+='<option value="'+s.name+'">'+s.name+(s.role?' ('+s.role+')':'')+'</option>';
+  });
+  sel.value=cur;
+}
+
+function calcHighTierKwh(kwh, pvKwhMonth){
+  let remaining=pvKwhMonth;
+  let rem=kwh,usages=[];
+  for(const t of EVN_TIERS_FULL){
+    const band=t.max===Infinity?rem:t.max-t.prev;
+    const used=Math.min(rem,band);
+    usages.push({...t,used});
+    rem-=used;if(rem<=0)break;
+  }
+  for(let i=usages.length-1;i>=0&&remaining>0;i--){
+    const d=Math.min(usages[i].used,remaining);
+    usages[i].used-=d;remaining-=d;
+  }
+  return usages.filter(t=>t.id>=5).reduce((s,t)=>s+t.used,0);
+}
+
+function applyRecommendation(kwp, hasBatt){
+  const battBtns=document.querySelectorAll('#battery-yn .radio-btn');
+  battBtns.forEach(b=>{b.classList.remove('selected');if(b.dataset.val===hasBatt)b.classList.add('selected');});
+  toggleBattery();
+  document.getElementById('s-kwh').scrollIntoView({behavior:'smooth',block:'center'});
+  setTimeout(()=>calculate(),200);
+}
+
+function showToast(msg, type){
+  type=type||'info';
+  let t=document.getElementById('nvh-toast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='nvh-toast';
+    t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.2);transition:opacity .3s;pointer-events:none';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg;
+  t.style.background=type==='success'?'#0E7C6B':type==='error'?'#A32D2D':'#1A2744';
+  t.style.color='white';
+  t.style.opacity='1';
+  clearTimeout(t._timer);
+  t._timer=setTimeout(function(){t.style.opacity='0';},2500);
+}
+
+function handleSaveQuote(){
+  // Nút này hiện tại ẩn (display:none), dự phòng cho tương lai
+  showToast('Báo giá đã được lưu!','success');
+}
+
+function clearCompare(){
+  compareList=[];
+  renderCompareTable();
+  showToast('Da xoa tat ca phuong an so sanh');
+}
+
+function handleSaveQuote(){
+  showToast('Bao gia da duoc luu!','success');
+}
+
+function calcHighTierKwh(kwh, pvKwhMonth){
+  let remaining=pvKwhMonth;
+  let rem=kwh,usages=[];
+  for(const t of EVN_TIERS_FULL){
+    const band=t.max===Infinity?rem:t.max-t.prev;
+    const used=Math.min(rem,band);
+    usages.push({...t,used});
+    rem-=used;if(rem<=0)break;
+  }
+  for(let i=usages.length-1;i>=0&&remaining>0;i--){
+    const d=Math.min(usages[i].used,remaining);
+    usages[i].used-=d;remaining-=d;
+  }
+  return usages.filter(t=>t.id>=5).reduce((s,t)=>s+t.used,0);
+}
+
+function applyRecommendation(kwp, hasBatt){
+  const battBtns=document.querySelectorAll('#battery-yn .radio-btn');
+  battBtns.forEach(b=>{b.classList.remove('selected');if(b.dataset.val===hasBatt)b.classList.add('selected');});
+  toggleBattery();
+  document.getElementById('s-kwh').scrollIntoView({behavior:'smooth',block:'center'});
+  setTimeout(()=>calculate(),200);
+}
+
+function showToast(msg, type){
+  type=type||'info';
+  let t=document.getElementById('nvh-toast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='nvh-toast';
+    t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.2);transition:opacity .3s;pointer-events:none';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg;
+  t.style.background=type==='success'?'#0E7C6B':type==='error'?'#A32D2D':'#1A2744';
+  t.style.color='white';
+  t.style.opacity='1';
+  clearTimeout(t._timer);
+  t._timer=setTimeout(function(){t.style.opacity='0';},2500);
+}
+
+// ===== INIT =====
+loadDB();
+toggleBattery();
+</script>
+  <script>
+    // Đăng ký Service Worker (PWA offline support)
+    if('serviceWorker' in navigator){
+      window.addEventListener('load', ()=>{
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg=>console.log('[PWA] Service Worker registered:', reg.scope))
+          .catch(err=>console.warn('[PWA] SW registration failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>

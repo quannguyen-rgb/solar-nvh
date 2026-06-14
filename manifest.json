@@ -1,0 +1,22 @@
+{
+  "name": "Solar NamVietHung – Báo Giá Điện Mặt Trời",
+  "short_name": "Solar NVH",
+  "description": "Ứng dụng tư vấn và lập báo giá hệ thống điện mặt trời áp mái",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1A2744",
+  "theme_color": "#1A2744",
+  "lang": "vi",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "screenshots": []
+}
